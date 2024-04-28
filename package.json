@@ -1,0 +1,46 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@headlessui/react": "^1.4.2",
+        "@inertiajs/react": "^1.0.0",
+        "@tailwindcss/forms": "^0.5.3",
+        "@vitejs/plugin-react": "^4.2.0",
+        "alpinejs": "^3.4.2",
+        "autoprefixer": "^10.4.12",
+        "axios": "^1.6.7",
+        "laravel-vite-plugin": "^1.0.0",
+        "postcss": "^8.4.31",
+        "prettier": "^3.2.5",
+        "prettier-plugin-tailwindcss": "^0.5.11",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "sass": "^1.69.7",
+        "tailwindcss": "^3.2.1",
+        "vite": "^5.0.0"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.11.3",
+        "@emotion/styled": "^11.11.0",
+        "@inertiajs/inertia": "^0.11.1",
+        "@inertiajs/inertia-react": "^0.8.1",
+        "@mui/icons-material": "^5.15.6",
+        "@mui/joy": "^5.0.0-beta.24",
+        "@mui/material": "^5.15.6",
+        "@zxing/browser": "^0.1.4",
+        "base-64": "^1.0.0",
+        "chart.js": "^4.4.1",
+        "cross-blob": "^3.0.2",
+        "framer-motion": "^11.0.20",
+        "izitoast": "^1.4.0",
+        "jsqr": "^1.4.0",
+        "react-burger-menu": "^3.0.9",
+        "react-device-detect": "^2.2.3",
+        "react-transition-group": "^4.4.5",
+        "react-webcam": "^7.2.0"
+    }
+}
