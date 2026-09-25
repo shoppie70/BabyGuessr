@@ -71,7 +71,7 @@
             <span>⚙️</span> ご両親用 管理画面URL
         </h2>
         <p class="text-xs text-purple-800 leading-relaxed">
-            友達の回答状況や正解者の履歴は、以下の管理URLから確認できます。<br>
+            友達の回答状況の確認や、AI鑑定の生成は管理画面から行えます。<br>
             このURLはご両親専用ですので大切に保管（ブックマーク）してください：
         </p>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -85,7 +85,7 @@
                 href="{{ $manageUrl }}" 
                 class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-xl text-center shrink-0 transition"
             >
-                管理画面へ
+                管理画面へ（鑑定生成）
             </a>
         </div>
     </div>

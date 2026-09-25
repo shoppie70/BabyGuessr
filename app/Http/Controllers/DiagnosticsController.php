@@ -55,6 +55,39 @@ class DiagnosticsController extends Controller
                 'reading_matches' => $readingMatchGuesses,
                 'wrong_guesses' => $totalGuesses - $correctGuesses - $readingMatchGuesses,
             ];
+
+            // 占術計算ステータス (本文は含めずステータスのみ抽出)
+            $calculations = $profile->fortuneCalculations->keyBy('calculator_key');
+            $fortuneKeys = [
+                'numerology' => '数秘術',
+                'shukuyo' => '宿曜占星術',
+                'nine_star_ki' => '九星気学',
+                'four_pillars' => '四柱推命',
+                'sanmeigaku' => '算命学',
+                'western_astrology' => '西洋占星術',
+                'zi_wei_dou_shu' => '紫微斗数',
+            ];
+
+            $fortuneStats = [];
+            foreach ($fortuneKeys as $key => $label) {
+                $calc = $calculations->get($key);
+                $fortuneStats[$key] = [
+                    'label' => $label,
+                    'status' => $calc?->status ?? 'uncalculated',
+                    'version' => $calc?->calculator_version ?? null,
+                    'calculated_at' => $calc?->calculated_at?->format('Y-m-d H:i:s'),
+                ];
+            }
+
+            $aiReport = $profile->fortuneReport;
+            $aiReportStats = [
+                'status' => $aiReport?->status ?? 'not_generated',
+                'model' => $aiReport?->model,
+                'generated_at' => $aiReport?->generated_at?->format('Y-m-d H:i:s'),
+                'input_tokens' => $aiReport?->input_tokens,
+                'output_tokens' => $aiReport?->output_tokens,
+                'error_code' => $aiReport?->error_code,
+            ];
         } else {
             // プロフィール未登録状態
             $babyProfileData = [
@@ -77,11 +110,23 @@ class DiagnosticsController extends Controller
                 'reading_matches' => 0,
                 'wrong_guesses' => 0,
             ];
+
+            $fortuneStats = [];
+            $aiReportStats = [
+                'status' => 'not_generated',
+                'model' => null,
+                'generated_at' => null,
+                'input_tokens' => null,
+                'output_tokens' => null,
+                'error_code' => null,
+            ];
         }
 
         $diagnostics = [
             'baby_profile' => $babyProfileData,
             'game_stats' => $gameStats,
+            'fortune_stats' => $fortuneStats,
+            'ai_report' => $aiReportStats,
             'system' => [
                 'laravel_version' => app()->version(),
                 'php_version' => PHP_VERSION,

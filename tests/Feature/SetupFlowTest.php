@@ -200,6 +200,18 @@ class SetupFlowTest extends TestCase
         // HMACが生成されていること
         $this->assertNotEmpty($raw->given_name_hmac);
         $this->assertNotEmpty($raw->given_name_kana_hmac);
+
+        // 占術計算が自動実行され、暗号化保存されていること
+        $calcRows = \Illuminate\Support\Facades\DB::table('fortune_calculations')
+            ->where('baby_profile_id', $raw->id)
+            ->get();
+        $this->assertCount(7, $calcRows);
+        foreach ($calcRows as $calc) {
+            $this->assertStringNotContainsString('山田', $calc->result_ciphertext);
+            $this->assertStringNotContainsString('花', $calc->result_ciphertext);
+            $this->assertStringNotContainsString('やまだ', $calc->result_ciphertext);
+            $this->assertStringNotContainsString('はな', $calc->result_ciphertext);
+        }
     }
 
     /**

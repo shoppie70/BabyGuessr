@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BabyProfile extends Model
 {
@@ -45,6 +46,16 @@ class BabyProfile extends Model
     public function guesses(): HasMany
     {
         return $this->hasMany(Guess::class);
+    }
+
+    public function fortuneCalculations(): HasMany
+    {
+        return $this->hasMany(FortuneCalculation::class);
+    }
+
+    public function fortuneReport(): HasOne
+    {
+        return $this->hasOne(FortuneReport::class);
     }
 
     /**

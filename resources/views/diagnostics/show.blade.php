@@ -107,6 +107,100 @@
             </div>
         </div>
 
+        @if(!empty($diagnostics['fortune_stats']))
+        <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center justify-between border-b border-slate-100 pb-3">
+                <span class="flex items-center gap-2"><span>🔮</span> 占術基礎計算ステータス (7系統)</span>
+                <span class="text-xs text-slate-400 font-normal">結果本文は秘匿</span>
+            </h2>
+            <div class="divide-y divide-slate-100 text-sm mt-2">
+                @foreach($diagnostics['fortune_stats'] as $key => $fStat)
+                <div class="py-2.5 flex justify-between items-center">
+                    <div>
+                        <span class="font-medium text-slate-700">{{ $fStat['label'] }}</span>
+                        <span class="text-xs font-mono text-slate-400 ml-1.5">({{ $key }})</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if($fStat['calculated_at'])
+                            <span class="text-xs text-slate-400 hidden sm:inline">{{ $fStat['calculated_at'] }}</span>
+                        @endif
+                        @switch($fStat['status'])
+                            @case('completed')
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                                    <span>✓</span> 完了
+                                </span>
+                                @break
+                            @case('partial')
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-800 flex items-center gap-1">
+                                    <span>⚠️</span> 部分的
+                                </span>
+                                @break
+                            @case('unavailable')
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600">
+                                    未対応 (時刻要)
+                                </span>
+                                @break
+                            @case('failed')
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-800">
+                                    失敗
+                                </span>
+                                @break
+                            @default
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-500">
+                                    未計算
+                                </span>
+                        @endswitch
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center justify-between border-b border-slate-100 pb-3">
+                <span class="flex items-center gap-2"><span>✨</span> AI鑑定</span>
+                <span class="text-xs text-slate-400 font-normal">本文は秘匿</span>
+            </h2>
+            <dl class="divide-y divide-slate-100 text-sm mt-2">
+                <div class="py-2.5 flex justify-between items-center">
+                    <dt class="text-slate-500 font-medium">状態</dt>
+                    <dd class="font-bold">
+                        @switch($diagnostics['ai_report']['status'] ?? 'not_generated')
+                            @case('completed')
+                                <span class="text-emerald-600">✓ 完了</span>
+                                @break
+                            @case('generating')
+                                <span class="text-amber-600">生成中</span>
+                                @break
+                            @case('failed')
+                                <span class="text-rose-600">失敗</span>
+                                @break
+                            @default
+                                <span class="text-slate-400">未生成</span>
+                        @endswitch
+                    </dd>
+                </div>
+                <div class="py-2.5 flex justify-between items-center">
+                    <dt class="text-slate-500 font-medium">モデル</dt>
+                    <dd class="font-mono text-slate-700 text-xs">{{ $diagnostics['ai_report']['model'] ?? '—' }}</dd>
+                </div>
+                <div class="py-2.5 flex justify-between items-center">
+                    <dt class="text-slate-500 font-medium">生成日時</dt>
+                    <dd class="font-mono text-slate-700 text-xs">{{ $diagnostics['ai_report']['generated_at'] ?? '—' }}</dd>
+                </div>
+                @if(!is_null($diagnostics['ai_report']['input_tokens'] ?? null) || !is_null($diagnostics['ai_report']['output_tokens'] ?? null))
+                <div class="py-2.5 flex justify-between items-center">
+                    <dt class="text-slate-500 font-medium">トークン</dt>
+                    <dd class="font-mono text-slate-700 text-xs">
+                        in {{ $diagnostics['ai_report']['input_tokens'] ?? '—' }}
+                        / out {{ $diagnostics['ai_report']['output_tokens'] ?? '—' }}
+                    </dd>
+                </div>
+                @endif
+            </dl>
+        </div>
+
         <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
                 <span>⚙️</span> システム環境情報

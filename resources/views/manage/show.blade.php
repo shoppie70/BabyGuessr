@@ -61,6 +61,78 @@
         </form>
     </div>
 
+    <!-- Fortune Card -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 space-y-4">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+            <span>🔮</span> AI鑑定レポート
+        </h2>
+
+        @if (session('fortune_error'))
+            <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-xs font-bold space-y-2">
+                <p>{{ session('fortune_error') }}</p>
+                <form action="{{ route('manage.fortune.generate', ['token' => $token]) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold cursor-pointer">
+                        もう一度試す
+                    </button>
+                </form>
+            </div>
+        @endif
+
+        @php
+            $fr = $fortuneReport;
+            $hasBody = $fr && $fr->hasReportBody();
+            $status = $fr?->status ?? 'not_generated';
+        @endphp
+
+        <div class="text-xs text-slate-600 space-y-1">
+            <p>
+                状態:
+                @switch($status)
+                    @case('completed')
+                        <span class="font-bold text-emerald-700">✓ 完了</span>
+                        @break
+                    @case('generating')
+                        <span class="font-bold text-amber-700">生成中</span>
+                        @break
+                    @case('failed')
+                        <span class="font-bold text-rose-700">失敗</span>
+                        @break
+                    @default
+                        <span class="font-bold text-slate-500">未生成</span>
+                @endswitch
+            </p>
+            @if($fr?->model)
+                <p>モデル: <span class="font-mono">{{ $fr->model }}</span></p>
+            @endif
+            @if($fr?->generated_at)
+                <p>生成日時: {{ $fr->generated_at->format('Y-m-d H:i') }}</p>
+            @endif
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+            @if($hasBody)
+                <a href="{{ $fortuneUrl }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">
+                    鑑定を見る
+                </a>
+                <form action="{{ route('manage.fortune.generate', ['token' => $token]) }}" method="POST" onsubmit="return confirm('既存の鑑定は、新しい鑑定が成功するまで保持されます。再生成しますか？');">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer">
+                        鑑定を再生成
+                    </button>
+                </form>
+            @else
+                <form action="{{ route('manage.fortune.generate', ['token' => $token]) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold cursor-pointer">
+                        鑑定を生成する
+                    </button>
+                </form>
+            @endif
+        </div>
+        <p class="text-[11px] text-slate-400">生成には数十秒かかることがあります。画面を閉じずに待ってください。</p>
+    </div>
+
     <!-- URLs Card -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 space-y-4">
         <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">

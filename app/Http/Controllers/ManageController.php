@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BabyProfile;
 use App\Models\Guess;
+use App\Services\Fortune\GeminiFortuneException;
+use App\Services\Fortune\GeminiFortuneService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,13 +19,11 @@ class ManageController extends Controller
     {
         $profile = BabyProfile::first();
 
-        // トークン検証: プロフィールのトークン、または未登録時は環境設定のトークンと照合
         $validToken = $profile?->manage_token ?? config('game.manage_token');
         if (empty($validToken) || !hash_equals($validToken, $token)) {
             abort(404);
         }
 
-        // 未登録状態の案内
         if (!$profile) {
             return view('manage.unregistered', [
                 'token' => $token,
@@ -40,6 +40,8 @@ class ManageController extends Controller
             'guesses' => $guesses,
             'gameUrl' => url('/g/' . $profile->game_token),
             'diagnosticsUrl' => url('/diagnostics/' . $profile->diagnostics_token),
+            'fortuneReport' => $profile->fortuneReport,
+            'fortuneUrl' => url('/manage/' . $token . '/fortune'),
         ]);
     }
 
@@ -64,5 +66,57 @@ class ManageController extends Controller
 
         return redirect()->route('manage.show', ['token' => $token])
             ->with('status', 'ゲームの状態を更新しました。');
+    }
+
+    /**
+     * AI鑑定を同期生成（または再生成）
+     */
+    public function generateFortune(string $token, GeminiFortuneService $gemini): RedirectResponse
+    {
+        $profile = BabyProfile::firstOrFail();
+
+        if (!hash_equals($profile->manage_token, $token)) {
+            abort(404);
+        }
+
+        try {
+            $gemini->generate($profile);
+
+            return redirect()->route('manage.fortune', ['token' => $token])
+                ->with('status', '鑑定が完成しました');
+        } catch (GeminiFortuneException $e) {
+            return redirect()->route('manage.show', ['token' => $token])
+                ->with('fortune_error', '鑑定の生成に失敗しました')
+                ->with('fortune_error_code', $e->errorCode);
+        }
+    }
+
+    /**
+     * 鑑定レポート表示
+     */
+    public function fortune(string $token): View|RedirectResponse
+    {
+        $profile = BabyProfile::firstOrFail();
+
+        if (!hash_equals($profile->manage_token, $token)) {
+            abort(404);
+        }
+
+        $report = $profile->fortuneReport;
+
+        if (!$report || !$report->hasReportBody()) {
+            return redirect()->route('manage.show', ['token' => $token])
+                ->with('fortune_error', 'まだ鑑定が生成されていません');
+        }
+
+        $babyName = $profile->given_name_encrypted ?: 'お子さま';
+
+        return view('manage.fortune', [
+            'profile' => $profile,
+            'token' => $token,
+            'report' => $report,
+            'data' => $report->report_ciphertext,
+            'babyName' => $babyName,
+        ]);
     }
 }

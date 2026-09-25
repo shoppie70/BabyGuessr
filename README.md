@@ -154,6 +154,54 @@ Seederを使わず、ご両親が実際に赤ちゃん情報を登録するE2E�
 
 ---
 
+## 🔮 占術基礎計算エンジン (Phase 3)
+
+AIによる文章生成（解釈）の前段として、出生・姓名データから決定論的（再現可能）に基礎データを算出・暗号化保存する純粋PHPエンジンを搭載しています。
+
+- **100% Pure PHP (Zero FFI / No C-extension)**: 共有レンタルサーバー環境（Xserver, StarServer等）でも外部依存やC拡張なしに動作可能。
+- **対応占術 (7系統)**:
+  1. **数秘術 (`numerology`)**: ピタゴラス数秘術（Life Path, Destiny, Soul, Personality, Birthday, Maturity）。母音・子音の厳密な判定（Yの特別ルール対応）。
+  2. **宿曜占星術 (`shukuyo`)**: 旧暦・太陰太陽暦による27宿、宿分類、四宮、十二宮配当、曜星の完全判定。
+  3. **九星気学 (`nine_star_ki`)**: 本命星、月命星、日命星（日本の気学に基づく陽遁・陰遁計算）、傾宮（月命盤回座）、同会（本命盤定位）、真太陽時・時差補正。
+  4. **四柱推命 (`four_pillars`)**: 年柱・月柱・日柱・時柱の天干・地支・蔵干（余気・中気・本気）、通変星、十二運星、五行バランス、特殊関係（冲・合）。
+  5. **算命学 (`sanmeigaku`)**: 陰占、陽占（人体星図の十大主星・十二大従星）、日干、天中殺（旬空）、守護神判定。
+  6. **西洋占星術 (`western_astrology`)**: VSOP87/ELP2000準拠の高精度天文計算（0.1秒角精度）。10天体（太陽・月・水星・金星・火星・木星・土星・天王星・海王星・冥王星）のサイン・度数、Placidusハウス計算、ASC/MC、主要アスペクト、エレメント・クオリティ分布。
+  7. **紫微斗数 (`zi_wei_dou_shu`)**: 旧暦生年月日時・時辰から命主、身主、命宮、身宮、十二宮配置、主星配置（紫微七殺巳宮格）、生年四化星、三方四正。
+- **暗号化保存 (`fortune_calculations`)**: 計算結果データはすべて `encrypted:array` でDB保存され、平文の流出を防ぎます。
+- **時刻欠損時のグレースフルハンドリング**: 出生時刻がない場合はエラーにせず、時柱やASC等を除外した `partial`（紫微斗数は `unavailable`）として記録。
+
+### 計算コマンド (CLI)
+
+```bash
+# 全赤ちゃんプロファイルの全占術を一括計算
+./vendor/bin/sail artisan fortune:calculate
+
+# 特定プロファイルの強制再計算
+./vendor/bin/sail artisan fortune:calculate --id=1 --force
+
+# 特定占術のみ計算
+./vendor/bin/sail artisan fortune:calculate --calculator=four_pillars
+```
+
+---
+
+## ✨ AI鑑定レポート (Phase 4)
+
+Gemini Interactions API（REST・`store=false`）で、7占術の計算結果を**1回のAPI呼び出し**で鑑定文に変換します。
+
+- Provider: Google AI Studio (`GEMINI_API_KEY` / `GEMINI_MODEL`)
+- 氏名・読み・住所など個人識別情報は Gemini に送りません
+- 鑑定本文は `fortune_reports.report_ciphertext` に暗号化保存
+- 管理画面の「鑑定を生成する」ボタンで同期実行（Queue不要）
+- 表示: `/manage/{token}/fortune`
+
+```bash
+# .env に GEMINI_API_KEY を設定後、実APIを1回だけ確認
+./vendor/bin/sail artisan fortune:generate-report --live
+```
+
+---
+
 ## 🧪 自動テストの実行
 
 ```bash
@@ -166,3 +214,10 @@ Seederを使わず、ご両親が実際に赤ちゃん情報を登録するE2E�
 - **暗号化 (Feature)**: データベース上に平文氏名が残らないこと、モデル復号の正常性、回答履歴の暗号化
 - **名前判定 (Feature)**: 山田花データに対する「花」(正解)、「はな/ハナ」(読み一致)、「楓」(不正解) の判定およびAPIフロー
 - **URL保護 (Feature)**: 無効なトークンやルートURLの404保護、noindex設定の検証、HTMLソースへの正解名非露出
+- **占術基礎計算 (Unit & Feature)**:
+  - Verified Fixture (`tests/Fixtures/Fortune/verified_fixture.php`, Phase 3.1): 暦・JPL照合済み
+  - 数秘術 (HANA YAMADA / LP 11/2 等・途中計算テスト)
+  - 宿曜 (旧暦 2/19, 心宿) / 九星 (八白日命・五黄時命) / 四柱 (庚戌日・丙戌時)
+  - 算命 (日干庚) / 西洋 (JPL Horizons ±0.2°) / 紫微 (命宮巳)
+  - 診断画面保護 (7系統の計算ステータス表示、本文完全秘匿)
+- **AI鑑定 (Feature, Http::fake)**: 正常系・429・invalid JSON・暗号化・再生成失敗時の旧レポート維持・payloadのPII除外・Diagnostics本文非表示

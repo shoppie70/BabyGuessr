@@ -4,8 +4,85 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "53b5d56b3b7e3cbac1713e68c8850f6c",
+    "content-hash": "5839682c8d6142157bb81b2092e7b0b4",
     "packages": [
+        {
+            "name": "6tail/lunar-php",
+            "version": "1.4.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/6tail/lunar-php.git",
+                "reference": "394d9f5afc78d3364456a6bb1369dbbb6f3ba88a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/6tail/lunar-php/zipball/394d9f5afc78d3364456a6bb1369dbbb6f3ba88a",
+                "reference": "394d9f5afc78d3364456a6bb1369dbbb6f3ba88a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "com\\nlf\\calendar\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "6tail",
+                    "email": "6tail@6tail.cn",
+                    "homepage": "https://6tail.cn"
+                }
+            ],
+            "description": "lunar是一款无第三方依赖的日历工具，支持公历(阳历)、农历(阴历、老黄历)、佛历和道历，支持星座、儒略日、干支、生肖、节气、节日、彭祖百忌、每日宜忌、吉神宜趋、凶煞宜忌、吉神(喜神/福神/财神/阳贵神/阴贵神)方位、胎神方位、冲煞、纳音、星宿、八字、五行、十神、建除十二值星、青龙名堂等十二神、黄道日及吉凶等。lunar is a calendar library for Solar and Chinese Lunar.",
+            "homepage": "https://github.com/6tail/lunar-php",
+            "keywords": [
+                "calendar",
+                "lunar",
+                "solar",
+                "五行",
+                "儒略日",
+                "八字",
+                "冲煞",
+                "凶煞宜忌",
+                "十神",
+                "吉神宜趋",
+                "喜神",
+                "干支",
+                "建除十二值星",
+                "彭祖百忌",
+                "时辰宜忌",
+                "星宿",
+                "星座",
+                "每日宜忌",
+                "生肖",
+                "福神",
+                "纳音",
+                "胎神",
+                "节假日",
+                "节日",
+                "节气",
+                "财神",
+                "阳贵神",
+                "阴贵神",
+                "青龙名堂等十二神",
+                "黄道日"
+            ],
+            "support": {
+                "issues": "https://github.com/6tail/lunar-php/issues",
+                "source": "https://github.com/6tail/lunar-php/tree/1.4.7"
+            },
+            "time": "2025-11-05T06:54:36+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.14.8",
@@ -443,6 +520,62 @@
                 }
             ],
             "time": "2025-10-31T18:51:33+00:00"
+        },
+        {
+            "name": "edulazaro/astronomy",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/edulazaro/astronomy-php.git",
+                "reference": "c5d955fe41b7d7e9418e2d6fa24340773e9b7e07"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/edulazaro/astronomy-php/zipball/c5d955fe41b7d7e9418e2d6fa24340773e9b7e07",
+                "reference": "c5d955fe41b7d7e9418e2d6fa24340773e9b7e07",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "bin": [
+                "bin/astronomy"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Astronomy\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Edu Lazaro",
+                    "homepage": "https://edulazaro.com"
+                }
+            ],
+            "description": "A pure PHP astronomical engine: planetary and lunar ephemerides, fixed stars, eclipses, occultations and rise and set times, verified against JPL Horizons.",
+            "keywords": [
+                "JPL",
+                "astronomy",
+                "eclipses",
+                "elp2000",
+                "ephemeris",
+                "horizons",
+                "vsop87"
+            ],
+            "support": {
+                "issues": "https://github.com/edulazaro/astronomy-php/issues",
+                "source": "https://github.com/edulazaro/astronomy-php/tree/1.0.1"
+            },
+            "time": "2026-09-19T17:58:05+00:00"
         },
         {
             "name": "egulias/email-validator",

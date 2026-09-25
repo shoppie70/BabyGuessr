@@ -29,6 +29,8 @@ Route::prefix('g/{token}')->name('game.')->group(function () {
 Route::prefix('manage/{token}')->name('manage.')->group(function () {
     Route::get('/', [ManageController::class, 'show'])->name('show');
     Route::post('/status', [ManageController::class, 'updateStatus'])->name('status');
+    Route::post('/fortune/generate', [ManageController::class, 'generateFortune'])->name('fortune.generate');
+    Route::get('/fortune', [ManageController::class, 'fortune'])->name('fortune');
 });
 
 // 運用確認・診断用 (ネタバレ防止)

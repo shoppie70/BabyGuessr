@@ -21,7 +21,7 @@ GuessBabyName v2 は、友人に子どもが生まれた際、両親が正解の
 2. 運営者自身がDB・ログ・診断画面を確認しても正解名を偶然知りにくいこと
 3. 共有レンタルサーバー上で常駐プロセスなしに運用できること
 4. 鑑定の基礎計算とAIによる文章生成を分離すること
-5. 占術計算の正しさを山田花の既存鑑定データで回帰テストできること
+5. 占術計算の正しさを山田花の Verified Golden Fixture（暦・天文照合済み）で回帰テストできること
 
 ---
 
@@ -1002,99 +1002,40 @@ Roman: HANA YAMADA
 座標: 約 東経133.93 / 北緯34.65〜34.66
 ```
 
-### 23.2 四柱推命 expected v0
+### 23.2 Verified Golden Fixture (Phase 3.1)
+
+正の期待値は `tests/Fixtures/Fortune/verified_fixture.php`。検証根拠は `tests/Fixtures/Fortune/PHASE_3_1_VERIFICATION.md`。
 
 ```text
-年柱: 丙午
-月柱: 壬辰
-日柱: 旧日柱
-時柱: 旧時柱
-日干: 甲
+四柱: 年丙午 / 月壬辰 / 日庚戌 / 時丙戌（日干 庚）
+九星: 本命一白 / 月命六白 / 日命八白 / 時命五黄 / 傾宮離 / 同会六白
+算命: 日干庚 / 寅卯天中殺 / 陽占は庚基点
+宿曜: 旧暦丙午年2月19日 / 心宿 / 急速宿 / 月曜
+数秘: HANA YAMADA / LP 11/2 / Destiny·Soul·Personality 9 / Birthday 6 / Maturity 2/20
+紫微: 旧暦2/19戌時 / 命宮巳 / 命主破軍 / 身主天同 / 命宮七殺
+西洋: JPL Horizons照合済み（例: Sun Ari 16.64° / Moon Sag 5.49° / ASC Sco 0°）
 ```
 
-### 23.3 九星気学 expected v0
+### 23.3 Narrative Reference（旧 expected v0・参考専用）
+
+旧AI鑑定の数値。**Calculator・AI Prompt・回帰テストの期待値に使わない。**
+Phase 4 では見出し構成・情報量・読みやすさの参考のみ。
 
 ```text
-本命星: 一白水星
-月命星: 六白金星
-傾宮: 離宮
-同会: 六白同会
-日命星: 五黄土星
+四柱: 旧 Narrative の日・時柱（誤り）
+九星: 日命星 五黄土星（時命星との混同）
+算命: 日干甲・人体星図（甲前提・不採用）
+ホロスコープ: Moon Sco 20° / Mercury Ari 10° / Mars Aqu 18° / Uranus Gem 0° / ASC Sco 24° 等（誤り）
 ```
 
-### 23.4 宿曜 expected v0
+宿曜・数秘・紫微の主要キーは Verified と一致する箇所があるが、一致をもって旧資料全体を正としない。
 
-```text
-旧暦: 丙午年 2月19日
-本命宿: 心宿
-分類: 急速宿
-四宮: 東方・青竜
-十二宮配当: 蠍宮 4足
-曜星: 月
-```
+### 23.4 Fixtureの扱い
 
-### 23.5 数秘 expected v0
-
-```text
-Life Path: 11 / 2
-Destiny: 9
-Soul: 9
-Personality: 9
-Birthday: 6
-Maturity: 2 / 20
-```
-
-### 23.6 算命学 expected v0
-
-```text
-日干: 甲
-天中殺: 寅卯天中殺
-北: 鳳閣星
-東: 調舒星
-中心: 石門星
-西: 石門星
-南: 龍高星
-```
-
-### 23.7 紫微斗数 expected v0
-
-```text
-旧暦: 丙午年 2月19日 戌時
-命主: 破軍星
-身主: 天同星
-命宮: 巳
-命宮主星: 七殺星
-官禄宮: 破軍星
-```
-
-### 23.8 ホロスコープ expected v0
-
-```text
-Sun: Aries 16° / 5H
-Moon: Scorpio 20° / 12-1H
-ASC: Scorpio 24°
-Mercury: Aries 10° / 5H
-Venus: Taurus 4° / 6H
-Mars: Aquarius 18° / 4H
-Jupiter: Cancer 12° / 8H
-Saturn: Aries 2° / 5H
-Uranus: Gemini 0° / 7H
-Neptune: Aries 1° / 5H
-Pluto: Aquarius 3° / 3H
-```
-
-### 23.9 Fixtureの扱い
-
-既存レポートはAI生成を含む過去資料であり、無条件の絶対正解とは扱わない。
-
-Calculatorとfixtureが不一致になった場合:
-
-1. 実装をfixtureに合わせて即修正しない
-2. 算定方式・暦・節入り・時差補正・流派差を確認する
-3. 独立した根拠で正しい値を確定する
-4. fixture側が誤りならexpectedを更新し、理由を記録する
-
-このルールにより、過去のAI鑑定に誤りがあった場合でも、その誤りをコードへ固定化しない。
+1. 数値の正は Verified Fixture + 暦/天文一次ソース
+2. Narrative Reference と不一致でも実装を旧値へ合わせない
+3. Calculator と Verified が不一致なら暦・節入り・流派・座標を再検証し、根拠のある側を更新する
+4. Phase 4 AI 入力は Calculator 構造化データのみ（旧 Markdown の命式・星位置は投入禁止）
 
 ---
 
