@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\BabyProfile;
 use App\Models\Guess;
-use App\Services\Fortune\GeminiFortuneException;
 use App\Services\Fortune\GeminiFortuneService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,14 +29,15 @@ class ManageController extends Controller
             ]);
         }
 
-        $guesses = Guess::where('baby_profile_id', $profile->id)
+        $winner = Guess::where('baby_profile_id', $profile->id)
+            ->where('result', Guess::RESULT_CORRECT)
             ->latest()
-            ->paginate(30);
+            ->first();
 
         return view('manage.show', [
             'profile' => $profile,
             'token' => $token,
-            'guesses' => $guesses,
+            'winner' => $winner,
             'gameUrl' => url('/g/' . $profile->game_token),
             'diagnosticsUrl' => url('/diagnostics/' . $profile->diagnostics_token),
             'fortuneReport' => $profile->fortuneReport,
@@ -79,16 +79,10 @@ class ManageController extends Controller
             abort(404);
         }
 
-        try {
-            $gemini->generate($profile);
+        $gemini->queueBatch($profile);
 
-            return redirect()->route('manage.fortune', ['token' => $token])
-                ->with('status', '鑑定が完成しました');
-        } catch (GeminiFortuneException $e) {
-            return redirect()->route('manage.show', ['token' => $token])
-                ->with('fortune_error', '鑑定の生成に失敗しました')
-                ->with('fortune_error_code', $e->errorCode);
-        }
+        return redirect()->route('manage.show', ['token' => $token])
+            ->with('status', '鑑定を再度依頼しました。できたころに、このページを開き直してください。');
     }
 
     /**

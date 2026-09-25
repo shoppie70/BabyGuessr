@@ -24,6 +24,20 @@ class UrlProtectionTest extends TestCase
     {
         $response = $this->get('/');
         $response->assertNotFound();
+        $response->assertDontSee('名前当て');
+    }
+
+    public function test_local_home_lists_page_links(): void
+    {
+        $this->app['env'] = 'local';
+
+        $this->get('/')
+            ->assertNotFound()
+            ->assertSee('登録')
+            ->assertSee('名前当て')
+            ->assertSee('鑑定')
+            ->assertSee('診断')
+            ->assertSee('/g/');
     }
 
     /**

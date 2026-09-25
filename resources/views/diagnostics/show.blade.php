@@ -2,12 +2,6 @@
 
 @section('title', 'システム診断・運用確認')
 
-@section('header_badge')
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-        診断モード（ネタバレ防止）
-    </span>
-@endsection
-
 @section('content')
 <div class="space-y-6">
     <!-- Notice Card -->

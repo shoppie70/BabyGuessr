@@ -1,24 +1,12 @@
 @extends('layouts.app')
 
-@section('title', '赤ちゃんの名前を当てよう！')
-
-@section('header_badge')
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-        限定公開
-    </span>
-@endsection
+@section('title', '赤ちゃんの名前、当ててみて')
 
 @section('content')
 <div class="space-y-6">
-    <!-- Intro Card -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 text-center relative overflow-hidden">
-        <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 select-none">👶</div>
-        
-        <span class="inline-block px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-semibold tracking-wider mb-2">
-            BABY NAME CHALLENGE
-        </span>
-        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
-            赤ちゃんの名前を当てよう！
+    <div class="bg-white rounded-2xl p-6 border border-amber-100 shadow-sm text-center">
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+            赤ちゃんの名前、当ててみて
         </h1>
         <p class="text-slate-500 text-sm mt-2">
             生まれたばかりの赤ちゃんの「<strong class="text-slate-700 font-semibold">下の名前</strong>」を予想してみてね！
@@ -27,7 +15,7 @@
         <!-- Hints (Family Name, Sex, Birth Date) -->
         <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
             <div class="inline-flex items-center gap-2 bg-amber-50/80 px-3.5 py-1.5 rounded-xl border border-amber-200/60">
-                <span class="text-[11px] font-semibold text-amber-700 uppercase">苗字</span>
+                <span class="text-[11px] font-semibold text-amber-700">苗字</span>
                 <span class="text-base font-bold text-slate-800">{{ $familyName }}</span>
                 <span class="text-xs text-slate-400">({{ $familyNameKana }})</span>
             </div>
@@ -41,7 +29,6 @@
 
             @if ($birthDateLabel)
                 <div class="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
-                    <span>🎂</span>
                     <span>{{ $birthDateLabel }} 生まれ</span>
                 </div>
             @endif
@@ -51,15 +38,13 @@
     <!-- Closed Game State -->
     @if ($profile->isClosed())
         <div class="bg-slate-100 border border-slate-200 rounded-2xl p-6 text-center text-slate-600">
-            <div class="text-3xl mb-2">🔒</div>
-            <h2 class="text-lg font-bold">このゲームは終了しました</h2>
+            <h2 class="text-lg font-bold">この名前当ては終わりました</h2>
             <p class="text-sm text-slate-500 mt-1">ご参加ありがとうございました！</p>
         </div>
     @else
         <!-- Revealed or Already Won Banner -->
         <div id="revealed-container" class="{{ $hasWon || $profile->isRevealed() ? '' : 'hidden' }} space-y-4">
             <div class="bg-gradient-to-br from-rose-500 to-pink-500 text-white rounded-2xl p-6 shadow-lg text-center relative overflow-hidden">
-                <div class="text-4xl mb-2 animate-bounce">🎉</div>
                 <h2 class="text-2xl sm:text-3xl font-black mb-1">
                     大正解！！
                 </h2>
@@ -95,7 +80,7 @@
                 <!-- Nickname Input -->
                 <div>
                     <label for="nickname" class="block text-xs font-bold text-slate-600 mb-1.5">
-                        あなたのニックネーム <span class="text-slate-400 font-normal">(任意)</span>
+                        あなたの名前 <span class="text-slate-400 font-normal">（空欄でもよい）</span>
                     </label>
                     <input 
                         type="text" 
@@ -135,8 +120,7 @@
                     id="submit-button"
                     class="w-full py-4 px-6 bg-gradient-to-r from-amber-500 to-rose-400 hover:from-amber-600 hover:to-rose-500 active:scale-[0.99] text-white font-bold text-lg rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <span id="button-spinner" class="hidden animate-spin">🌀</span>
-                    <span id="button-text">回答する！✨</span>
+                    <span id="button-text">答える</span>
                 </button>
             </form>
 
@@ -162,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const babyNameInput = document.getElementById('baby_name');
     const submitBtn = document.getElementById('submit-button');
     const btnText = document.getElementById('button-text');
-    const btnSpinner = document.getElementById('button-spinner');
 
     const resultAlert = document.getElementById('result-alert');
     const resultBox = document.getElementById('result-box');
@@ -198,8 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 送信中UI
         submitBtn.disabled = true;
-        btnSpinner.classList.remove('hidden');
-        btnText.textContent = '判定中...';
+        btnText.textContent = '確認しています';
         resultAlert.classList.add('hidden');
 
         try {
@@ -231,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 判定結果に応じた表示
             if (data.is_correct) {
-                showResult('correct', '大正解です！！🎉', data.message);
+                showResult('correct', '大正解です', data.message);
                 
                 // 正解情報の表示 (正式氏名・読みのみ)
                 if (data.revealed_name) {
@@ -241,11 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     revealedContainer.scrollIntoView({ behavior: 'smooth' });
                 }
             } else if (data.is_reading_match) {
-                showResult('reading_match', '読み方は大正解！💡', data.message);
+                showResult('reading_match', '読みは合っています', data.message);
                 babyNameInput.focus();
                 babyNameInput.select();
             } else {
-                showResult('wrong', 'ざんねん！ちがう名前です💪', data.message);
+                showResult('wrong', 'ちがう名前です', data.message);
                 babyNameInput.focus();
                 babyNameInput.select();
             }
@@ -255,8 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showResult('error', '通信エラー', '通信に失敗しました。接続をご確認の上もう一度お試しください。');
         } finally {
             submitBtn.disabled = false;
-            btnSpinner.classList.add('hidden');
-            btnText.textContent = '回答する！✨';
+            btnText.textContent = '答える';
         }
     });
 

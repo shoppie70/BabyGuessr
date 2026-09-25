@@ -66,6 +66,280 @@ class GeminiFortuneService
     }
 
     /**
+     * 登録直後に呼ぶ。APIが失敗しても登録は残し、cron が queued を再送する。
+     */
+    public function queueBatch(BabyProfile $profile): void
+    {
+        $report = FortuneReport::firstOrNew(['baby_profile_id' => $profile->id]);
+        if ($report->isCompleted() && $report->hasReportBody()) {
+            return;
+        }
+        if ($report->status === FortuneReport::STATUS_GENERATING && filled($report->batch_name)) {
+            return;
+        }
+
+        $report->status = FortuneReport::STATUS_QUEUED;
+        $report->error_code = null;
+        $report->save();
+
+        if (empty(config('services.gemini.api_key'))) {
+            $report->error_code = 'api_key_missing';
+            $report->save();
+
+            return;
+        }
+
+        try {
+            $bundle = $this->compactBundleForPrompt(
+                $this->sanitizeBundleForGemini($this->buildCalculatorBundle($profile))
+            );
+            $response = $this->postBatch($this->buildBatchBody($profile, $bundle));
+            $name = $response['name'] ?? null;
+            if (!is_string($name) || $name === '') {
+                throw new GeminiFortuneException('バッチの受付番号がありません', 'batch_name_missing');
+            }
+
+            $report->fill([
+                'status' => FortuneReport::STATUS_GENERATING,
+                'batch_name' => $name,
+                'model' => config('services.gemini.model'),
+                'error_code' => null,
+            ]);
+            $report->save();
+        } catch (GeminiFortuneException $e) {
+            $report->error_code = $e->errorCode;
+            $report->status = in_array($e->errorCode, ['calculations_missing', 'api_key_invalid'], true)
+                ? FortuneReport::STATUS_FAILED
+                : FortuneReport::STATUS_QUEUED;
+            $report->save();
+            Log::warning('Gemini batch submit failed', ['error_code' => $e->errorCode]);
+        } catch (\Throwable $e) {
+            $report->error_code = 'unexpected';
+            $report->status = FortuneReport::STATUS_QUEUED;
+            $report->save();
+            Log::warning('Gemini batch submit failed', ['exception' => $e::class]);
+        }
+    }
+
+    public function pullBatch(FortuneReport $report): void
+    {
+        if ($report->status !== FortuneReport::STATUS_GENERATING || blank($report->batch_name)) {
+            return;
+        }
+
+        try {
+            $job = $this->getBatch($report->batch_name);
+        } catch (GeminiFortuneException $e) {
+            $report->error_code = $e->errorCode;
+            $report->save();
+
+            return;
+        }
+
+        $state = $job['metadata']['state'] ?? $job['state'] ?? '';
+        if (is_array($state)) {
+            $state = $state['name'] ?? '';
+        }
+
+        if (in_array($state, ['JOB_STATE_FAILED', 'JOB_STATE_CANCELLED', 'JOB_STATE_EXPIRED'], true)) {
+            $report->status = FortuneReport::STATUS_FAILED;
+            $report->error_code = strtolower($state);
+            $report->save();
+
+            return;
+        }
+
+        if ($state !== 'JOB_STATE_SUCCEEDED') {
+            return;
+        }
+
+        try {
+            $text = $this->extractInlineBatchText($job);
+            $usage = $this->extractBatchUsage($job);
+            $parsed = $this->parseAndValidateResponse([
+                'output_text' => $text,
+                'usage' => [
+                    'total_input_tokens' => $usage['input'] ?? null,
+                    'total_output_tokens' => $usage['output'] ?? null,
+                ],
+            ]);
+            $report->fill([
+                'status' => FortuneReport::STATUS_COMPLETED,
+                'report_ciphertext' => $parsed['report'],
+                'input_tokens' => $parsed['input_tokens'],
+                'output_tokens' => $parsed['output_tokens'],
+                'error_code' => null,
+                'generated_at' => now(),
+            ]);
+            $report->save();
+        } catch (GeminiFortuneException $e) {
+            $report->status = FortuneReport::STATUS_FAILED;
+            $report->error_code = $e->errorCode;
+            $report->save();
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $bundle
+     * @return array<string, mixed>
+     */
+    public function buildBatchBody(BabyProfile $profile, array $bundle): array
+    {
+        $payload = $this->buildRequestPayload($bundle);
+
+        return [
+            'batch' => [
+                'display_name' => 'fortune-'.$profile->id,
+                'input_config' => [
+                    'requests' => [
+                        'requests' => [[
+                            'request' => [
+                                'contents' => [[
+                                    'role' => 'user',
+                                    'parts' => [['text' => $payload['input']]],
+                                ]],
+                                'systemInstruction' => [
+                                    'parts' => [['text' => $payload['system_instruction']]],
+                                ],
+                                'generationConfig' => [
+                                    'responseMimeType' => 'application/json',
+                                    'responseSchema' => $payload['response_format']['schema'],
+                                ],
+                            ],
+                            'metadata' => ['key' => 'fortune'],
+                        ]],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     * @return array<string, mixed>
+     */
+    protected function postBatch(array $body): array
+    {
+        $model = (string) config('services.gemini.model');
+        $url = rtrim((string) config('services.gemini.batch_base'), '/')
+            .'/models/'.$model.':batchGenerateContent';
+
+        return $this->batchRequest('post', $url, $body);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getBatch(string $batchName): array
+    {
+        $url = rtrim((string) config('services.gemini.batch_base'), '/').'/'.ltrim($batchName, '/');
+
+        return $this->batchRequest('get', $url);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $body
+     * @return array<string, mixed>
+     */
+    protected function batchRequest(string $method, string $url, ?array $body = null): array
+    {
+        $apiKey = config('services.gemini.api_key');
+        if (empty($apiKey)) {
+            throw new GeminiFortuneException('Gemini API Keyが未設定です', 'api_key_missing');
+        }
+
+        try {
+            $pending = Http::withHeaders([
+                'x-goog-api-key' => $apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(20);
+            $response = $method === 'get' ? $pending->get($url) : $pending->post($url, $body ?? []);
+        } catch (ConnectionException $e) {
+            throw new GeminiFortuneException('Gemini APIへの接続に失敗しました', 'timeout', 0, $e);
+        }
+
+        if ($response->status() === 401 || $response->status() === 403) {
+            throw new GeminiFortuneException('Gemini API Keyが無効です', 'api_key_invalid', $response->status());
+        }
+
+        if ($response->failed()) {
+            throw new GeminiFortuneException('Geminiバッチの依頼に失敗しました', 'http_error', $response->status());
+        }
+
+        $json = $response->json();
+        if (!is_array($json)) {
+            throw new GeminiFortuneException('Geminiバッチの応答が不正です', 'invalid_json');
+        }
+
+        return $json;
+    }
+
+    /**
+     * @param  array<string, mixed>  $job
+     */
+    protected function extractInlineBatchText(array $job): string
+    {
+        $lists = [
+            $job['response']['inlinedResponses']['inlinedResponses'] ?? null,
+            $job['response']['inlinedResponses'] ?? null,
+            $job['dest']['inlinedResponses'] ?? null,
+        ];
+
+        foreach ($lists as $list) {
+            if (!is_array($list) || !array_is_list($list) || !isset($list[0]) || !is_array($list[0])) {
+                continue;
+            }
+            $first = $list[0];
+            if (isset($first['error'])) {
+                throw new GeminiFortuneException('バッチ鑑定が失敗しました', 'batch_item_failed');
+            }
+            $resp = is_array($first['response'] ?? null) ? $first['response'] : $first;
+            if (isset($resp['text']) && is_string($resp['text']) && $resp['text'] !== '') {
+                return $resp['text'];
+            }
+            $parts = $resp['candidates'][0]['content']['parts'] ?? [];
+            $chunks = [];
+            if (is_array($parts)) {
+                foreach ($parts as $part) {
+                    if (isset($part['text']) && is_string($part['text'])) {
+                        $chunks[] = $part['text'];
+                    }
+                }
+            }
+            if ($chunks !== []) {
+                return implode('', $chunks);
+            }
+        }
+
+        throw new GeminiFortuneException('バッチ結果から本文を取得できませんでした', 'empty_output');
+    }
+
+    /**
+     * @param  array<string, mixed>  $job
+     * @return array{input: ?int, output: ?int}
+     */
+    protected function extractBatchUsage(array $job): array
+    {
+        $lists = [
+            $job['response']['inlinedResponses']['inlinedResponses'] ?? null,
+            $job['dest']['inlinedResponses'] ?? null,
+        ];
+        foreach ($lists as $list) {
+            if (!is_array($list) || !isset($list[0]['response']['usageMetadata'])) {
+                continue;
+            }
+            $usage = $list[0]['response']['usageMetadata'];
+
+            return [
+                'input' => isset($usage['promptTokenCount']) ? (int) $usage['promptTokenCount'] : null,
+                'output' => isset($usage['candidatesTokenCount']) ? (int) $usage['candidatesTokenCount'] : null,
+            ];
+        }
+
+        return ['input' => null, 'output' => null];
+    }
+
+    /**
      * Calculator結果のみ（PIIなし）
      *
      * @return array<string, array{status: string, calculator_version: string, data: array}>

@@ -153,6 +153,45 @@ class GeminiFortuneReportTest extends TestCase
         }
     }
 
+    public function test_sync_batch_stores_completed_report(): void
+    {
+        $profile = $this->createAyaProfile();
+        app(FortuneManager::class)->calculateAll($profile);
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::sequence()
+                ->push(['name' => 'batches/aya'], 200)
+                ->push([
+                    'metadata' => ['state' => 'JOB_STATE_SUCCEEDED'],
+                    'response' => [
+                        'inlinedResponses' => [
+                            'inlinedResponses' => [[
+                                'response' => [
+                                    'candidates' => [[
+                                        'content' => ['parts' => [['text' => $this->validReportJson()]]],
+                                    ]],
+                                    'usageMetadata' => [
+                                        'promptTokenCount' => 10,
+                                        'candidatesTokenCount' => 20,
+                                    ],
+                                ],
+                            ]],
+                        ],
+                    ],
+                ], 200),
+        ]);
+
+        app(GeminiFortuneService::class)->queueBatch($profile);
+        $report = $profile->fresh()->fortuneReport;
+        $this->assertSame(FortuneReport::STATUS_GENERATING, $report->status);
+        $this->assertSame('batches/aya', $report->batch_name);
+
+        $this->artisan('fortune:sync-batch')->assertSuccessful();
+        $report->refresh();
+        $this->assertSame(FortuneReport::STATUS_COMPLETED, $report->status);
+        $this->assertSame('温かい光をまとった子', $report->report_ciphertext['summary']['catchphrase']);
+    }
+
     public function test_manage_generate_and_fortune_view(): void
     {
         $profile = $this->createAyaProfile();
@@ -162,9 +201,7 @@ class GeminiFortuneReportTest extends TestCase
             'generativelanguage.googleapis.com/*' => Http::response($this->fakeGeminiHttpBody($this->validReportJson()), 200),
         ]);
 
-        $this->post('/manage/' . $profile->manage_token . '/fortune/generate')
-            ->assertRedirect('/manage/' . $profile->manage_token . '/fortune')
-            ->assertSessionHas('status', '鑑定が完成しました');
+        app(GeminiFortuneService::class)->generate($profile);
 
         $this->get('/manage/' . $profile->manage_token . '/fortune')
             ->assertOk()
@@ -185,8 +222,11 @@ class GeminiFortuneReportTest extends TestCase
         ]);
 
         $this->post('/manage/' . $profile->manage_token . '/fortune/generate')
-            ->assertRedirect('/manage/' . $profile->manage_token)
-            ->assertSessionHas('fortune_error', '鑑定の生成に失敗しました');
+            ->assertRedirect('/manage/' . $profile->manage_token);
+
+        $this->get('/manage/' . $profile->manage_token)
+            ->assertOk()
+            ->assertSee('鑑定を作れませんでした');
     }
 
     public function test_diagnostics_shows_ai_status_without_report_body(): void

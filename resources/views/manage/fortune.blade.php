@@ -1,12 +1,23 @@
 @extends('layouts.app')
 
-@section('title', $babyName . 'ちゃんの鑑定レポート')
+@section('title', $babyName . 'ちゃんの鑑定')
 
-@section('header_badge')
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-        ご両親用・鑑定
-    </span>
-@endsection
+@push('head')
+<style>
+    .fortune-read {
+        font-family: "Zen Maru Gothic", sans-serif;
+        font-size: 1.0625rem;
+        line-height: 1.85;
+        letter-spacing: 0;
+        line-break: strict;
+        color: #292524;
+    }
+    .fortune-read p + p,
+    .fortune-read div + p,
+    .fortune-read p + div { margin-top: 1rem; }
+    .fortune-ui { font-family: "Zen Maru Gothic", sans-serif; }
+</style>
+@endpush
 
 @section('content')
 @php
@@ -31,29 +42,29 @@
         </div>
     @endif
 
-    <div class="flex items-center justify-between gap-2">
+    <div class="fortune-ui flex items-center justify-between gap-2">
         <div>
-            <h1 class="text-lg font-extrabold text-slate-800">{{ $babyName }}ちゃんの鑑定</h1>
+            <h1 class="text-xl font-bold text-slate-800">{{ $babyName }}ちゃんの鑑定</h1>
             @if(!empty($data['summary']['catchphrase']))
-                <p class="text-sm text-amber-800 mt-1">{{ $data['summary']['catchphrase'] }}</p>
+                <p class="fortune-read text-amber-800 mt-2">{{ $data['summary']['catchphrase'] }}</p>
             @endif
         </div>
-        <a href="{{ route('manage.show', ['token' => $token]) }}" class="text-xs font-bold text-slate-500 hover:text-slate-800 shrink-0">← 管理画面</a>
+        <a href="{{ route('manage.show', ['token' => $token]) }}" class="text-sm font-bold text-slate-500 shrink-0">戻る</a>
     </div>
 
     @if(!empty($data['summary']['overview']))
-        <p class="text-sm text-slate-600 leading-relaxed bg-amber-50/60 border border-amber-100 rounded-xl p-4">
+        <p class="fortune-read bg-amber-50/60 border border-amber-100 rounded-xl p-4">
             {{ $data['summary']['overview'] }}
         </p>
     @endif
 
     <div class="space-y-2">
         @foreach($tabs as $key => $label)
-            <details class="bg-white rounded-xl border border-slate-100 shadow-sm" @if($loop->first) open @endif>
-                <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-slate-800 select-none">
+            <details class="bg-white rounded-xl border border-amber-100 shadow-sm" @if($loop->first) open @endif>
+                <summary class="fortune-ui cursor-pointer px-4 py-3 text-base font-bold text-slate-800 select-none flex items-center">
                     {{ $label }}
                 </summary>
-                <div class="px-4 pb-4 text-sm text-slate-700 leading-relaxed space-y-3 border-t border-slate-50 pt-3">
+                <div class="fortune-read px-4 pb-5 border-t border-amber-100 pt-4">
                     @if($key === 'integrated')
                         @php $ir = $data['integrated_report'] ?? []; @endphp
                         <p><span class="font-bold text-slate-500 text-xs block mb-1">本質</span>{{ $ir['core_traits'] ?? '' }}</p>
@@ -87,7 +98,7 @@
                             </div>
                         @endif
                         @php $le = $pg['lucky_elements'] ?? []; @endphp
-                        <div class="text-xs space-y-1 bg-slate-50 rounded-lg p-3">
+                        <div class="space-y-1 bg-amber-50 rounded-lg p-3">
                             <p><span class="font-bold">ラッキー数字:</span> {{ implode(' / ', $le['numbers'] ?? []) }}</p>
                             <p><span class="font-bold">ラッキーカラー:</span> {{ implode(' / ', $le['colors'] ?? []) }}</p>
                             <p><span class="font-bold">おすすめ活動:</span> {{ implode(' / ', $le['activities'] ?? []) }}</p>
@@ -119,7 +130,7 @@
         @endforeach
     </div>
 
-    <p class="text-[11px] text-slate-400 text-center pt-2">
+    <p class="fortune-ui text-xs text-slate-400 text-center pt-2">
         本鑑定は娯楽・エンタメ目的です。人生の断定や医療・進路の助言ではありません。
     </p>
 </div>

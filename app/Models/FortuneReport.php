@@ -11,6 +11,7 @@ class FortuneReport extends Model
     use HasFactory;
 
     public const STATUS_NOT_GENERATED = 'not_generated';
+    public const STATUS_QUEUED = 'queued';
     public const STATUS_GENERATING = 'generating';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_FAILED = 'failed';
@@ -18,6 +19,7 @@ class FortuneReport extends Model
     protected $fillable = [
         'baby_profile_id',
         'status',
+        'batch_name',
         'model',
         'report_ciphertext',
         'input_tokens',

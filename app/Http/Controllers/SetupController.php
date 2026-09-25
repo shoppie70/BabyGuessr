@@ -141,6 +141,7 @@ class SetupController extends Controller
         // 占術基礎計算の実行 (バックグラウンド/同期で暗号化保存)
         try {
             app(\App\Services\Fortune\FortuneManager::class)->calculateAll($profile);
+            app(\App\Services\Fortune\GeminiFortuneService::class)->queueBatch($profile);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Fortune calculation failed on setup: ' . $e->getMessage());
         }

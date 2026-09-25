@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\BabyProfile;
+use App\Models\FortuneReport;
 use App\Models\Guess;
 use App\Services\GameJudgeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SetupFlowTest extends TestCase
@@ -24,6 +26,9 @@ class SetupFlowTest extends TestCase
             'game.setup_token' => $this->setupToken,
             'game.manage_token' => $this->manageToken,
             'game.diagnostics_token' => $this->diagnosticsToken,
+        ]);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response(['name' => 'batches/test-job'], 200),
         ]);
     }
 
@@ -43,12 +48,12 @@ class SetupFlowTest extends TestCase
         // 管理画面 (未登録案内)
         $manageResponse = $this->get('/manage/' . $this->manageToken);
         $manageResponse->assertOk()
-            ->assertSee('赤ちゃん情報は未登録です');
+            ->assertSee('まだ登録がありません');
 
         // セットアップ画面 (入力フォーム)
         $setupResponse = $this->get('/setup/' . $this->setupToken);
         $setupResponse->assertOk()
-            ->assertSee('赤ちゃんの情報を登録する');
+            ->assertSee('赤ちゃんのことを教えてください');
     }
 
     /**
@@ -115,8 +120,13 @@ class SetupFlowTest extends TestCase
         $completeResponse = $this->get('/setup/' . $this->setupToken . '/complete');
         $completeResponse->assertOk()
             ->assertViewIs('setup.complete')
-            ->assertSee('登録が完了しました！')
-            ->assertSee('/g/game-');
+            ->assertSee('受け付けました')
+            ->assertDontSee('/g/');
+
+        $report = FortuneReport::first();
+        $this->assertNotNull($report);
+        $this->assertSame(FortuneReport::STATUS_GENERATING, $report->status);
+        $this->assertSame('batches/test-job', $report->batch_name);
 
         // DBに1件のみ作成されていること
         $this->assertEquals(1, BabyProfile::count());
@@ -148,7 +158,7 @@ class SetupFlowTest extends TestCase
         $formResponse = $this->get('/setup/' . $this->setupToken);
         $formResponse->assertOk()
             ->assertViewIs('setup.already-registered')
-            ->assertSee('登録は完了しています');
+            ->assertSee('受け付け済みです');
 
         // 2回目の登録試行 (POST時)
         $secondStoreResponse = $this->post('/setup/' . $this->setupToken, [

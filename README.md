@@ -192,8 +192,9 @@ Gemini Interactions API（REST・`store=false`）で、7占術の計算結果を
 - Provider: Google AI Studio (`GEMINI_API_KEY` / `GEMINI_MODEL`)
 - 氏名・読み・住所など個人識別情報は Gemini に送りません
 - 鑑定本文は `fortune_reports.report_ciphertext` に暗号化保存
-- 管理画面の「鑑定を生成する」ボタンで同期実行（Queue不要）
-- 表示: `/manage/{token}/fortune`
+- 友人の登録保存をきっかけに Gemini Batch API へ渡す。画面では待たない
+- 完了の取り込みは `fortune:sync-batch`（5分ごと）。エックスサーバーの cron で `schedule:run` を回す
+- できた鑑定は `/manage/{token}` から見て、友人に送る
 
 ```bash
 # .env に GEMINI_API_KEY を設定後、実APIを1回だけ確認
