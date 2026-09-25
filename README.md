@@ -107,6 +107,12 @@ echo 'Generated GAME_HMAC_SECRET' . PHP_EOL;
 
 ## 🌐 画面URL一覧
 
+> [!WARNING]
+> **アクセス時の注意点**:  
+> 本アプリは一般公開トップページを持たない1ゲーム限定のサービスです。  
+> `http://localhost` 直下（`/`）を開くと仕様により非公開案内（404）が表示されます。  
+> ブラウザからは必ず以下の **トークン付きURL**（例: `/g/demo-game-token-2026`）へ直接アクセスしてください。（ローカル環境の `/` にも開発用ショートカットリンクが表示されます）
+
 投入されたテストデータ（山田花）を使って以下のURLにアクセスできます:
 
 | 画面 | URL | 説明 |
@@ -114,7 +120,7 @@ echo 'Generated GAME_HMAC_SECRET' . PHP_EOL;
 | **名前当てゲーム** (参加者用) | [http://localhost/g/demo-game-token-2026](http://localhost/g/demo-game-token-2026) | 友人が回答するゲーム画面 |
 | **管理者画面** (両親・運営用) | [http://localhost/manage/demo-manage-token-2026](http://localhost/manage/demo-manage-token-2026) | 登録情報確認・ステータス変更・回答ログ一覧 |
 | **診断画面** (運用保守用) | [http://localhost/diagnostics/demo-diag-token-2026](http://localhost/diagnostics/demo-diag-token-2026) | ネタバレ防止（平文氏名非表示）の稼働・回答統計確認 |
-| **トップページ** | [http://localhost/](http://localhost/) | 404 (非公開) |
+| **トップページ** | [http://localhost/](http://localhost/) | 非公開案内ページ（404） |
 
 全公開ページに `<meta name="robots" content="noindex, nofollow">` が設定されています。
 

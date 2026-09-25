@@ -5,9 +5,9 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\ManageController;
 use Illuminate\Support\Facades\Route;
 
-// ルートURL (/) は非公開（404 またはシンプルな非公開案内）
+// ルートURL (/) は非公開（404ステータスで非公開案内ページを表示）
 Route::get('/', function () {
-    abort(404);
+    return response()->view('landing-private', [], 404);
 });
 
 // ゲーム参加者用
