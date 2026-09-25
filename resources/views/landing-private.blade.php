@@ -26,6 +26,11 @@
                 <span class="text-xs font-bold text-amber-800 block mb-2">🛠️ ローカル開発用ショートカット</span>
                 <ul class="space-y-2 text-xs">
                     <li>
+                        <a href="{{ url('/setup/demo-setup-token-2026') }}" class="font-bold text-emerald-700 hover:underline flex items-center gap-1.5">
+                            <span>👶</span> 初期セットアップ画面 (ご両親登録用)
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ url('/g/demo-game-token-2026') }}" class="font-bold text-amber-700 hover:underline flex items-center gap-1.5">
                             <span>🎮</span> 名前当てゲーム画面 (参加者用)
                         </a>

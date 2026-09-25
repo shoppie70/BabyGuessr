@@ -15,7 +15,20 @@ class ManageController extends Controller
      */
     public function show(string $token): View
     {
-        $profile = BabyProfile::where('manage_token', $token)->firstOrFail();
+        $profile = BabyProfile::first();
+
+        // トークン検証: プロフィールのトークン、または未登録時は環境設定のトークンと照合
+        $validToken = $profile?->manage_token ?? config('game.manage_token');
+        if (empty($validToken) || !hash_equals($validToken, $token)) {
+            abort(404);
+        }
+
+        // 未登録状態の案内
+        if (!$profile) {
+            return view('manage.unregistered', [
+                'token' => $token,
+            ]);
+        }
 
         $guesses = Guess::where('baby_profile_id', $profile->id)
             ->latest()
@@ -35,7 +48,11 @@ class ManageController extends Controller
      */
     public function updateStatus(Request $request, string $token): RedirectResponse
     {
-        $profile = BabyProfile::where('manage_token', $token)->firstOrFail();
+        $profile = BabyProfile::firstOrFail();
+
+        if (!hash_equals($profile->manage_token, $token)) {
+            abort(404);
+        }
 
         $validated = $request->validate([
             'status' => ['required', 'in:open,revealed,closed'],

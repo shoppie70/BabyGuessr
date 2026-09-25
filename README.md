@@ -95,9 +95,23 @@ echo 'Generated GAME_HMAC_SECRET' . PHP_EOL;
 ./vendor/bin/sail npm run build
 ```
 
-### 6. テストデータ（山田花 fixture）の投入
+### 6. 動作確認方法の選択
 
-開発・動作確認用のテストフィクスチャを投入します:
+本アプリは、以下のいずれかの方法で動作確認を行えます。
+
+#### 【方法A】実際の登録フローで確認する（推奨）
+
+Seederを使わず、ご両親が実際に赤ちゃん情報を登録するE2Eフローを確認できます：
+
+1. ブラウザで **[http://localhost/setup/demo-setup-token-2026](http://localhost/setup/demo-setup-token-2026)** を開く
+2. 赤ちゃんの情報（姓・名・読み・性別・生年月日等）を入力して「確認へ進む」をクリック
+3. 確認画面で内容をチェックし、「登録する」をクリック
+4. 完了画面に表示される **ゲーム参加URL（`/g/{game-token}`）** をコピーしてゲームを開始
+
+#### 【方法B】テストフィクスチャ（山田花）で簡易確認する
+
+手動登録を省略してすぐにゲームや診断画面を試したい場合は、テスト用Seederを実行してください：
+
 ```bash
 ./vendor/bin/sail artisan db:seed --class=Database\\Seeders\\BabyProfileTestSeeder
 ```
@@ -111,25 +125,32 @@ echo 'Generated GAME_HMAC_SECRET' . PHP_EOL;
 > **アクセス時の注意点**:  
 > 本アプリは一般公開トップページを持たない1ゲーム限定のサービスです。  
 > `http://localhost` 直下（`/`）を開くと仕様により非公開案内（404）が表示されます。  
-> ブラウザからは必ず以下の **トークン付きURL**（例: `/g/demo-game-token-2026`）へ直接アクセスしてください。（ローカル環境の `/` にも開発用ショートカットリンクが表示されます）
+> ブラウザからは必ず以下の **トークン付きURL**（例: `/setup/demo-setup-token-2026`）へ直接アクセスしてください。（ローカル環境の `/` にも開発用ショートカットリンクが表示されます）
 
-投入されたテストデータ（山田花）を使って以下のURLにアクセスできます:
-
-| 画面 | URL | 説明 |
+| 画面 | デフォルトURL (開発用) | 説明 |
 | :--- | :--- | :--- |
-| **名前当てゲーム** (参加者用) | [http://localhost/g/demo-game-token-2026](http://localhost/g/demo-game-token-2026) | 友人が回答するゲーム画面 |
+| **初期セットアップ** (ご両親用) | [http://localhost/setup/demo-setup-token-2026](http://localhost/setup/demo-setup-token-2026) | 1回限りの赤ちゃん情報登録画面（入力→確認→完了） |
+| **名前当てゲーム** (参加者用) | `http://localhost/g/{game-token}`<br>※Seeder時は [http://localhost/g/demo-game-token-2026](http://localhost/g/demo-game-token-2026) | 友人が回答するゲーム画面 |
 | **管理者画面** (両親・運営用) | [http://localhost/manage/demo-manage-token-2026](http://localhost/manage/demo-manage-token-2026) | 登録情報確認・ステータス変更・回答ログ一覧 |
 | **診断画面** (運用保守用) | [http://localhost/diagnostics/demo-diag-token-2026](http://localhost/diagnostics/demo-diag-token-2026) | ネタバレ防止（平文氏名非表示）の稼働・回答統計確認 |
 | **トップページ** | [http://localhost/](http://localhost/) | 非公開案内ページ（404） |
 
 全公開ページに `<meta name="robots" content="noindex, nofollow">` が設定されています。
 
-### 動作確認例
+### ゲーム画面の公開情報仕様
 
-ゲーム画面（`http://localhost/g/demo-game-token-2026`）にて:
+ゲーム参加者に余計な個人情報が漏れないよう、表示項目は厳格にコントロールされています：
+
+- **正解前**: 姓（苗字）、性別（女の子/男の子）、生年月日のみ表示
+- **正解後**: 正式氏名（漢字）、読み（ひらがな）のみ公開
+- **非公開**: 出生地、出生時刻、出生体重は鑑定内部用データとし、ゲーム参加者には一切表示されません。
+
+### 動作確認例（山田花データ投入時）
+
+ゲーム画面にて:
 - `楓` と入力 → **不正解**
 - `はな` または `ハナ` と入力 → **読み一致**（「読み方は大正解！漢字はまだ違います」）
-- `花` と入力 → **大正解**（正式な氏名「山田 花」、生年月日、出生地等の情報がオープン）
+- `花` と入力 → **大正解**（正式な氏名「山田 花」、読み「やまだ はな」がオープン）
 
 ---
 

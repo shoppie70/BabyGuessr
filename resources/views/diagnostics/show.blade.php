@@ -30,8 +30,12 @@
             <dl class="divide-y divide-slate-100 text-sm mt-2">
                 <div class="py-2.5 flex justify-between items-center">
                     <dt class="text-slate-500 font-medium">プロフィール基本データ</dt>
-                    <dd class="font-bold text-emerald-600 flex items-center gap-1">
-                        <span>✓</span> 登録済み
+                    <dd class="font-bold {{ $diagnostics['baby_profile']['registered'] ? 'text-emerald-600' : 'text-slate-400' }} flex items-center gap-1">
+                        @if ($diagnostics['baby_profile']['registered'])
+                            <span>✓</span> 登録済み
+                        @else
+                            <span>-</span> 未登録
+                        @endif
                     </dd>
                 </div>
                 <div class="py-2.5 flex justify-between items-center">

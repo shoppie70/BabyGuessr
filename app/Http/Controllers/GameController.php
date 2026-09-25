@@ -40,15 +40,24 @@ class GameController extends Controller
             ->where('result', Guess::RESULT_CORRECT)
             ->exists();
 
+        // 正解前ヒント情報 (姓、性別、生年月日のみ)
+        $sexLabel = match ($profile->sex) {
+            'female' => '女の子 👧',
+            'male' => '男の子 👦',
+            default => '赤ちゃん',
+        };
+
         return view('game.show', [
             'profile' => $profile,
             'token' => $token,
             'attemptCount' => $attemptCount,
             'hasWon' => $hasWon,
-            // 名字のみヒントとして公開
+            // 正解前ヒント情報
             'familyName' => $profile->family_name,
             'familyNameKana' => $profile->family_name_kana,
-            // 正解済みまたは公開状態の場合のみ正解氏名を渡す
+            'sexLabel' => $sexLabel,
+            'birthDateLabel' => $profile->birth_date ? $profile->birth_date->format('Y年n月j日') : null,
+            // 正解済みまたは公開状態の場合のみ正解氏名・読みを渡す (出生地・時刻等は一切渡さない)
             'revealedFullName' => ($hasWon || $profile->isRevealed()) ? $profile->full_name : null,
             'revealedFullNameKana' => ($hasWon || $profile->isRevealed()) ? $profile->full_name_kana : null,
         ]);
@@ -90,7 +99,7 @@ class GameController extends Controller
         $attemptNo = $currentAttempts + 1;
 
         // 回答履歴の保存（暗号化して保存）
-        $guess = Guess::create([
+        Guess::create([
             'baby_profile_id' => $profile->id,
             'challenger_name_encrypted' => $validated['nickname'] ?? '名無しさん',
             'guess_encrypted' => $validated['baby_name'],
@@ -108,15 +117,11 @@ class GameController extends Controller
             'is_reading_match' => $judgeResult->isReadingMatch(),
         ];
 
-        // 正解した場合のみ、正式な氏名・読みをレスポンスに含める
+        // 正解した場合のみ、正式な氏名・読みをレスポンスに含める（出生地・時刻・体重は秘匿）
         if ($judgeResult->isCorrect()) {
             $responsePayload['revealed_name'] = [
                 'full_name' => $profile->full_name,
                 'full_name_kana' => $profile->full_name_kana,
-                'birth_date' => $profile->birth_date->format('Y年n月j日'),
-                'birth_time' => $profile->birth_time ? substr($profile->birth_time, 0, 5) : null,
-                'birth_place' => $profile->birth_place,
-                'birth_weight' => $profile->birth_weight,
             ];
         }
 

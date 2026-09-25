@@ -13,19 +13,24 @@ class DiagnosticsController extends Controller
      */
     public function show(string $token): View
     {
-        $profile = BabyProfile::where('diagnostics_token', $token)->firstOrFail();
+        $profile = BabyProfile::first();
 
-        $totalGuesses = Guess::where('baby_profile_id', $profile->id)->count();
-        $correctGuesses = Guess::where('baby_profile_id', $profile->id)
-            ->where('result', Guess::RESULT_CORRECT)
-            ->count();
-        $readingMatchGuesses = Guess::where('baby_profile_id', $profile->id)
-            ->where('result', Guess::RESULT_READING_MATCH)
-            ->count();
+        // トークン検証: プロフィールのトークン、または未登録時は環境設定のトークンと照合
+        $validToken = $profile?->diagnostics_token ?? config('game.diagnostics_token');
+        if (empty($validToken) || !hash_equals($validToken, $token)) {
+            abort(404);
+        }
 
-        // 状態のみ判定 (平文値そのものはビューに渡さない)
-        $diagnostics = [
-            'baby_profile' => [
+        if ($profile) {
+            $totalGuesses = Guess::where('baby_profile_id', $profile->id)->count();
+            $correctGuesses = Guess::where('baby_profile_id', $profile->id)
+                ->where('result', Guess::RESULT_CORRECT)
+                ->count();
+            $readingMatchGuesses = Guess::where('baby_profile_id', $profile->id)
+                ->where('result', Guess::RESULT_READING_MATCH)
+                ->count();
+
+            $babyProfileData = [
                 'registered' => true,
                 'has_name' => !empty($profile->given_name_hmac),
                 'has_reading' => !empty($profile->given_name_kana_hmac),
@@ -42,13 +47,41 @@ class DiagnosticsController extends Controller
                 },
                 'created_at' => $profile->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $profile->updated_at->format('Y-m-d H:i:s'),
-            ],
-            'game_stats' => [
+            ];
+
+            $gameStats = [
                 'total_guesses' => $totalGuesses,
                 'correct_guesses' => $correctGuesses,
                 'reading_matches' => $readingMatchGuesses,
                 'wrong_guesses' => $totalGuesses - $correctGuesses - $readingMatchGuesses,
-            ],
+            ];
+        } else {
+            // プロフィール未登録状態
+            $babyProfileData = [
+                'registered' => false,
+                'has_name' => false,
+                'has_reading' => false,
+                'has_birth_date' => false,
+                'has_birth_time' => false,
+                'has_birth_place' => false,
+                'has_birth_weight' => false,
+                'sex' => '未登録',
+                'status' => '未セットアップ',
+                'created_at' => null,
+                'updated_at' => null,
+            ];
+
+            $gameStats = [
+                'total_guesses' => 0,
+                'correct_guesses' => 0,
+                'reading_matches' => 0,
+                'wrong_guesses' => 0,
+            ];
+        }
+
+        $diagnostics = [
+            'baby_profile' => $babyProfileData,
+            'game_stats' => $gameStats,
             'system' => [
                 'laravel_version' => app()->version(),
                 'php_version' => PHP_VERSION,

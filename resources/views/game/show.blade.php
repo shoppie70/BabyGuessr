@@ -24,11 +24,27 @@
             生まれたばかりの赤ちゃんの「<strong class="text-slate-700 font-semibold">下の名前</strong>」を予想してみてね！
         </p>
 
-        <!-- Family Name Banner -->
-        <div class="mt-4 inline-flex items-center gap-3 bg-amber-50/80 px-4 py-2 rounded-xl border border-amber-200/60">
-            <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider">苗字</span>
-            <span class="text-xl font-bold text-slate-800">{{ $familyName }}</span>
-            <span class="text-xs text-slate-400">({{ $familyNameKana }})</span>
+        <!-- Hints (Family Name, Sex, Birth Date) -->
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <div class="inline-flex items-center gap-2 bg-amber-50/80 px-3.5 py-1.5 rounded-xl border border-amber-200/60">
+                <span class="text-[11px] font-semibold text-amber-700 uppercase">苗字</span>
+                <span class="text-base font-bold text-slate-800">{{ $familyName }}</span>
+                <span class="text-xs text-slate-400">({{ $familyNameKana }})</span>
+            </div>
+
+            @if ($sexLabel)
+                <div class="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
+                    <span>性別:</span>
+                    <span>{{ $sexLabel }}</span>
+                </div>
+            @endif
+
+            @if ($birthDateLabel)
+                <div class="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
+                    <span>🎂</span>
+                    <span>{{ $birthDateLabel }} 生まれ</span>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -58,18 +74,6 @@
                     <p id="revealed-name" class="text-3xl sm:text-4xl font-extrabold text-white mt-1 tracking-wider">
                         {{ $revealedFullName ?? '' }}
                     </p>
-                </div>
-
-                <div id="revealed-details" class="mt-4 text-xs text-pink-100 space-y-1">
-                    @if ($profile->birth_date)
-                        <p>🎂 生年月日: {{ $profile->birth_date->format('Y年n月j日') }} {{ $profile->birth_time ? substr($profile->birth_time, 0, 5) : '' }}</p>
-                    @endif
-                    @if ($profile->birth_place)
-                        <p>📍 出生地: {{ $profile->birth_place }}</p>
-                    @endif
-                    @if ($profile->birth_weight)
-                        <p>⚖️ 出生体重: {{ number_format($profile->birth_weight) }}g</p>
-                    @endif
                 </div>
             </div>
         </div>
@@ -116,7 +120,7 @@
                             required 
                             autofocus 
                             class="w-full px-4 py-4 rounded-xl border-2 border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-xl font-bold text-slate-800 placeholder:text-slate-300 placeholder:text-base placeholder:font-normal bg-white transition text-center sm:text-left"
-                            placeholder="例: 花 または はな" 
+                            placeholder="例: 陽葵 または ひなた" 
                             maxlength="50"
                         >
                     </div>
@@ -170,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const revealedContainer = document.getElementById('revealed-container');
     const revealedName = document.getElementById('revealed-name');
     const revealedKana = document.getElementById('revealed-kana');
-    const revealedDetails = document.getElementById('revealed-details');
 
     // ローカルストレージにニックネームがあれば復帰
     const savedNickname = localStorage.getItem('guess_baby_nickname');
@@ -230,22 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.is_correct) {
                 showResult('correct', '大正解です！！🎉', data.message);
                 
-                // 正解情報の表示
+                // 正解情報の表示 (正式氏名・読みのみ)
                 if (data.revealed_name) {
                     revealedName.textContent = data.revealed_name.full_name;
                     revealedKana.textContent = data.revealed_name.full_name_kana;
-                    
-                    let detailsHtml = '';
-                    if (data.revealed_name.birth_date) {
-                        detailsHtml += `<p>🎂 生年月日: ${data.revealed_name.birth_date} ${data.revealed_name.birth_time || ''}</p>`;
-                    }
-                    if (data.revealed_name.birth_place) {
-                        detailsHtml += `<p>📍 出生地: ${data.revealed_name.birth_place}</p>`;
-                    }
-                    if (data.revealed_name.birth_weight) {
-                        detailsHtml += `<p>⚖️ 出生体重: ${Number(data.revealed_name.birth_weight).toLocaleString()}g</p>`;
-                    }
-                    revealedDetails.innerHTML = detailsHtml;
                     revealedContainer.classList.remove('hidden');
                     revealedContainer.scrollIntoView({ behavior: 'smooth' });
                 }

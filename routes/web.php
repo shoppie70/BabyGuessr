@@ -3,11 +3,20 @@
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ManageController;
+use App\Http\Controllers\SetupController;
 use Illuminate\Support\Facades\Route;
 
 // ルートURL (/) は非公開（404ステータスで非公開案内ページを表示）
 Route::get('/', function () {
     return response()->view('landing-private', [], 404);
+});
+
+// 初期セットアップフロー (1デプロイにつき1回限りの登録)
+Route::prefix('setup/{token}')->name('setup.')->group(function () {
+    Route::get('/', [SetupController::class, 'show'])->name('show');
+    Route::post('/confirm', [SetupController::class, 'confirm'])->name('confirm');
+    Route::post('/', [SetupController::class, 'store'])->name('store');
+    Route::get('/complete', [SetupController::class, 'complete'])->name('complete');
 });
 
 // ゲーム参加者用
