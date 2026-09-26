@@ -34,9 +34,9 @@ class NameNormalizationTest extends TestCase
     public function test_spaces_are_trimmed_and_removed(): void
     {
         // 読みの空白除去
-        $this->assertEquals('はな', $this->normalizer->normalizeKana(' あ や '));
-        $this->assertEquals('はな', $this->normalizer->normalizeKana('　あ　や　'));
-        $this->assertEquals('はな', $this->normalizer->normalizeKana(" \t ア　ヤ \n"));
+        $this->assertEquals('はな', $this->normalizer->normalizeKana(' は な '));
+        $this->assertEquals('はな', $this->normalizer->normalizeKana('　は　な　'));
+        $this->assertEquals('はな', $this->normalizer->normalizeKana(" \t ハ　ナ \n"));
 
         // 漢字の空白除去
         $this->assertEquals('花', $this->normalizer->normalizeKanji(' 花 '));

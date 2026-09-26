@@ -100,16 +100,16 @@ class NumerologyCalculatorTest extends TestCase
             $reduce($reduce($sumLetters('HANA')) + $reduce($sumLetters('YAMADA')))
         );
 
-        $this->assertSame(2, $sumVowels('HANA')); // A+A; Y=子音
-        $this->assertSame(16, $sumVowels('YAMADA'));
-        $this->assertSame($fx['soul']['primary'], $reduce($reduce(2) + $reduce(16)));
+        $this->assertSame(2, $sumVowels('HANA')); // A+A
+        $this->assertSame(3, $sumVowels('YAMADA')); // A+A+A
+        $this->assertSame($fx['soul']['primary'], $reduce($reduce(2) + $reduce(3)));
 
-        $this->assertSame(7, $sumConsonants('HANA')); // Y
-        $this->assertSame(11, $sumConsonants('YAMADA'));
-        $this->assertSame($fx['personality']['primary'], $reduce($reduce(7) + $reduce(11)));
+        $this->assertSame(13, $sumConsonants('HANA')); // H+N
+        $this->assertSame(15, $sumConsonants('YAMADA')); // Y+M+D
+        $this->assertSame($fx['personality']['primary'], $reduce($reduce(13) + $reduce(15)));
 
-        // Maturity: master Life Path 11 + Destiny 9 = 20 → 2
-        $this->assertSame(20, 11 + $fx['destiny']['primary']);
-        $this->assertSame($fx['maturity']['raw_sum'], 20);
+        // Maturity: master Life Path 11 + Destiny 6 = 17 → 8
+        $this->assertSame(17, 11 + $fx['destiny']['primary']);
+        $this->assertSame($fx['maturity']['raw_sum'], 17);
     }
 }

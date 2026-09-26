@@ -56,7 +56,7 @@ class GameJudgeTest extends TestCase
         $this->assertTrue($resultKatakana->isReadingMatch());
 
         // 空白付きカタカナ
-        $resultWithSpaces = $judgeService->judge($profile, ' ア ヤ ');
+        $resultWithSpaces = $judgeService->judge($profile, ' ハ ナ ');
         $this->assertTrue($resultWithSpaces->isReadingMatch());
     }
 
