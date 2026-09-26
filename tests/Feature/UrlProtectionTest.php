@@ -61,8 +61,9 @@ class UrlProtectionTest extends TestCase
         $gameResponse = $this->get('/g/' . $profile->game_token);
         $gameResponse->assertOk();
         $gameResponse->assertSee('<meta name="robots" content="noindex, nofollow">', false);
-        // HTMLソースに正解名「花」が露出していないこと（苗字「山田」はOK）
-        $gameResponse->assertDontSee('山田 花');
+        // HTMLソースに氏名が露出していないこと
+        $gameResponse->assertDontSee('山田');
+        $gameResponse->assertDontSee('花');
 
         // 2. 管理画面
         $manageResponse = $this->get('/manage/' . $profile->manage_token);

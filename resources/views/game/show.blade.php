@@ -12,14 +12,8 @@
             生まれたばかりの赤ちゃんの「<strong class="text-slate-700 font-semibold">下の名前</strong>」を予想してみてね！
         </p>
 
-        <!-- Hints (Family Name, Sex, Birth Date) -->
+        <!-- Hints (Sex, Birth Date) -->
         <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <div class="inline-flex items-center gap-2 bg-amber-50/80 px-3.5 py-1.5 rounded-xl border border-amber-200/60">
-                <span class="text-[11px] font-semibold text-amber-700">苗字</span>
-                <span class="text-base font-bold text-slate-800">{{ $familyName }}</span>
-                <span class="text-xs text-slate-400">({{ $familyNameKana }})</span>
-            </div>
-
             @if ($sexLabel)
                 <div class="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
                     <span>性別:</span>
@@ -77,21 +71,6 @@
             </div>
 
             <form id="guess-form" class="space-y-5">
-                <!-- Nickname Input -->
-                <div>
-                    <label for="nickname" class="block text-xs font-bold text-slate-600 mb-1.5">
-                        あなたの名前 <span class="text-slate-400 font-normal">（空欄でもよい）</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="nickname" 
-                        name="nickname" 
-                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-sm text-slate-800 bg-slate-50/50 placeholder:text-slate-300 transition"
-                        placeholder="例: たなか" 
-                        maxlength="50"
-                    >
-                </div>
-
                 <!-- Baby Name Input -->
                 <div>
                     <label for="baby_name" class="block text-sm font-bold text-slate-700 mb-1.5">
@@ -142,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('guess-form');
     if (!form) return;
 
-    const nicknameInput = document.getElementById('nickname');
     const babyNameInput = document.getElementById('baby_name');
     const submitBtn = document.getElementById('submit-button');
     const btnText = document.getElementById('button-text');
@@ -158,25 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const revealedName = document.getElementById('revealed-name');
     const revealedKana = document.getElementById('revealed-kana');
 
-    // ローカルストレージにニックネームがあれば復帰
-    const savedNickname = localStorage.getItem('guess_baby_nickname');
-    if (savedNickname && nicknameInput) {
-        nicknameInput.value = savedNickname;
-    }
-
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const babyName = babyNameInput.value.trim();
-        const nickname = nicknameInput ? nicknameInput.value.trim() : '';
 
         if (!babyName) {
             babyNameInput.focus();
             return;
-        }
-
-        if (nickname) {
-            localStorage.setItem('guess_baby_nickname', nickname);
         }
 
         // 送信中UI
@@ -195,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     baby_name: babyName,
-                    nickname: nickname,
                 })
             });
 

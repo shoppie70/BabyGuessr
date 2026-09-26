@@ -40,7 +40,7 @@ class GameController extends Controller
             ->where('result', Guess::RESULT_CORRECT)
             ->exists();
 
-        // 正解前ヒント情報 (姓、性別、生年月日のみ)
+        // 正解前ヒント情報 (性別、生年月日のみ)
         $sexLabel = match ($profile->sex) {
             'female' => '女の子 👧',
             'male' => '男の子 👦',
@@ -53,8 +53,6 @@ class GameController extends Controller
             'attemptCount' => $attemptCount,
             'hasWon' => $hasWon,
             // 正解前ヒント情報
-            'familyName' => $profile->family_name,
-            'familyNameKana' => $profile->family_name_kana,
             'sexLabel' => $sexLabel,
             'birthDateLabel' => $profile->birth_date ? $profile->birth_date->format('Y年n月j日') : null,
             // 正解済みまたは公開状態の場合のみ正解氏名・読みを渡す (出生地・時刻等は一切渡さない)
