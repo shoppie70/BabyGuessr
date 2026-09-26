@@ -6,10 +6,11 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', '赤ちゃんの名前を当ててみて')</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=zen-maru-gothic:400,500,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Zen Maru Gothic', sans-serif; }
+        body { font-family: 'M PLUS Rounded 1c', sans-serif; font-weight: 500; }
     </style>
     @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
