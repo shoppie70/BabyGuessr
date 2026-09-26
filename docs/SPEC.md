@@ -999,34 +999,19 @@ DB dumpを取得し、以下の文字列検索でヒットしないこと。
 正の期待値は上記 Fixture。検証根拠は `docs/phase-3-1-verification.md`。
 
 ```text
-四柱: 年丙午 / 月壬辰 / 日庚戌 / 時丙戌（日干 庚）
-九星: 本命一白 / 月命六白 / 日命八白 / 時命五黄 / 傾宮離 / 同会六白
-算命: 日干庚 / 寅卯天中殺 / 陽占は庚基点
-宿曜: 旧暦丙午年2月19日 / 心宿 / 急速宿 / 月曜
-数秘: HANA YAMADA / LP 11/2 / Destiny 6 / Soul 5 / Personality 1 / Birthday 6 / Maturity 8
-紫微: 旧暦2/19戌時 / 命宮巳 / 命主破軍 / 身主天同 / 命宮七殺
-西洋: JPL Horizons照合済み（例: Sun Ari 16.64° / Moon Sag 5.49° / ASC Sco 0°）
+（期待値の全文は verified_fixture.php を正とする。ここに実データは書かない。）
+数秘例: HANA YAMADA / LP・Destiny 等は Fixture の numerology 節
 ```
 
-### 23.3 Narrative Reference（旧 expected v0・参考専用）
+### 23.3 Narrative Reference
 
-旧AI鑑定の数値。**Calculator・AI Prompt・回帰テストの期待値に使わない。**
-Phase 4 では見出し構成・情報量・読みやすさの参考のみ。
-
-```text
-四柱: 旧 Narrative の日・時柱（誤り）
-九星: 日命星 五黄土星（時命星との混同）
-算命: 日干甲・人体星図（甲前提・不採用）
-ホロスコープ: Moon Sco 20° / Mercury Ari 10° / Mars Aqu 18° / Uranus Gem 0° / ASC Sco 24° 等（誤り）
-```
-
-宿曜・数秘・紫微の主要キーは Verified と一致する箇所があるが、一致をもって旧資料全体を正としない。
+旧 AI 鑑定の数値は**使わない**。公開リポジトリには転載しない。
 
 ### 23.4 Fixtureの扱い
 
-1. 数値の正は Verified Fixture + 暦/天文一次ソース
-2. Narrative Reference と不一致でも実装を旧値へ合わせない
-3. Calculator と Verified が不一致なら暦・節入り・流派・座標を再検証し、根拠のある側を更新する
+1. 数値の正は Verified Fixture（合成入力）
+2. Calculator と Verified が不一致なら Calculator か Fixture を更新する
+3. 実在個人の出生情報を Fixture / ドキュメントに戻さない
 4. Phase 4 AI 入力は Calculator 構造化データのみ（旧 Markdown の命式・星位置は投入禁止）
 
 ---

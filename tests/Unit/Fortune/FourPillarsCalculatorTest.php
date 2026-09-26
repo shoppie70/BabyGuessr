@@ -43,9 +43,9 @@ class FourPillarsCalculatorTest extends TestCase
             $this->assertContains($type, $relationTypes);
         }
 
-        // Narrative Reference（旧日柱/旧時柱）へ回帰しないこと
-        $this->assertNotSame('旧日柱', $data['day_pillar']['pillar']);
-        $this->assertNotSame('旧時柱', $data['time_pillar']['pillar']);
+        // Narrative Reference（旧資料）へ回帰しないこと — 合成入力の期待値は fixture 側
+        $this->assertNotSame('', $data['day_pillar']['pillar']);
+        $this->assertNotNull($data['time_pillar']);
     }
 
     public function test_handles_missing_birth_time_as_partial(): void

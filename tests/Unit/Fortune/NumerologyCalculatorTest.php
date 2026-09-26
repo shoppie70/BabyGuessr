@@ -33,7 +33,7 @@ class NumerologyCalculatorTest extends TestCase
         $fx = VerifiedFortuneFixture::section('numerology')['life_path']['breakdown'];
         $data = (new NumerologyCalculator())->calculate(VerifiedFortuneFixture::input())->data;
 
-        // 2026 → 2+0+2+6=10 → 1; month 4; day 6; 1+4+6=11 (master)
+        // 2000 → 2; month 1; day 6; 2+1+6=9
         $this->assertSame($fx['year_reduced'], $data['life_path']['breakdown']['year']);
         $this->assertSame($fx['month'], $data['life_path']['breakdown']['month']);
         $this->assertSame($fx['day'], $data['life_path']['breakdown']['day']);
@@ -43,8 +43,8 @@ class NumerologyCalculatorTest extends TestCase
             + $data['life_path']['breakdown']['month']
             + $data['life_path']['breakdown']['day']
         );
-        $this->assertSame(11, $data['life_path']['master']);
-        $this->assertSame(2, $data['life_path']['primary']);
+        $this->assertNull($data['life_path']['master']);
+        $this->assertSame(9, $data['life_path']['primary']);
     }
 
     public function test_destiny_soul_personality_letter_math(): void
@@ -108,8 +108,8 @@ class NumerologyCalculatorTest extends TestCase
         $this->assertSame(15, $sumConsonants('YAMADA')); // Y+M+D
         $this->assertSame($fx['personality']['primary'], $reduce($reduce(13) + $reduce(15)));
 
-        // Maturity: master Life Path 11 + Destiny 6 = 17 → 8
-        $this->assertSame(17, 11 + $fx['destiny']['primary']);
-        $this->assertSame($fx['maturity']['raw_sum'], 17);
+        // Maturity: Life Path 9 + Destiny 6 = 15 → 6
+        $this->assertSame(15, 9 + $fx['destiny']['primary']);
+        $this->assertSame($fx['maturity']['raw_sum'], 15);
     }
 }

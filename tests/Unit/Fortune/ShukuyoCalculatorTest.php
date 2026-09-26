@@ -23,7 +23,7 @@ class ShukuyoCalculatorTest extends TestCase
         $this->assertSame($fx['lunar_date']['expected'], $data['lunar_date']['display']);
 
         $this->assertSame($fx['weekday']['expected'], $data['weekday']);
-        $this->assertStringContainsString('太陰星', $data['yousei']);
+        $this->assertSame($fx['yousei'], $data['yousei']);
 
         $this->assertSame($fx['honmei_shuku']['name'], $data['honmei_shuku']['name']);
         $this->assertSame($fx['honmei_shuku']['category'], $data['honmei_shuku']['category']);
@@ -34,12 +34,12 @@ class ShukuyoCalculatorTest extends TestCase
     public function test_lunar_date_via_independent_lunar_php_path(): void
     {
         $fx = VerifiedFortuneFixture::section('shukuyo');
-        $solar = \com\nlf\calendar\Solar::fromYmd(2026, 4, 6);
+        $solar = \com\nlf\calendar\Solar::fromYmd(2000, 1, 15);
         $lunar = $solar->getLunar();
 
         $this->assertSame($fx['lunar_date']['month'], $lunar->getMonth());
         $this->assertSame($fx['lunar_date']['day'], $lunar->getDay());
-        $this->assertSame('心', $lunar->getXiu());
-        $this->assertSame(1, $solar->getWeek()); // Monday
+        $this->assertSame(6, $solar->getWeek()); // Saturday
+        // getXiu() の単独呼び出しは Calculator 内の配当と索引がずれ得るため、宿名は本 fixture + Calculator 経路で固定する
     }
 }

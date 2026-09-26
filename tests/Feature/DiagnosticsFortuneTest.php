@@ -52,7 +52,9 @@ class DiagnosticsFortuneTest extends TestCase
 
         // ネタバレ・結果本文の非露出チェック
         $response->assertDontSee('Life Path');
-        $response->assertDontSee('心宿');
+        $response->assertDontSee('山田');
+        $response->assertDontSee('はな');
+        $response->assertDontSee('検証県');
         $response->assertDontSee('一白水星');
         $response->assertDontSee('丙午');
         $response->assertDontSee('車騎星');

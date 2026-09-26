@@ -197,11 +197,8 @@ class FourPillarsCalculator implements FortuneCalculatorInterface
         // 特殊関係の判定（合・冲）
         $specialRelations = $this->detectSpecialRelations($pillarsToCount);
 
-        // 既存資料との対比メモ
+        // 既存資料との対比メモは置かない（合成入力・公開リポジトリ向け）
         $notes = [];
-        if ($dayGan !== '甲') {
-            $notes[] = "日柱は暦学上「{$dayPillar['pillar']}」（日干: {$dayGan}）です。既存資料の「日柱の旧誤記」は2024年の干支またはAI生成ハルシネーションと推定されます。";
-        }
 
         $data = [
             'day_master' => [

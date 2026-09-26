@@ -61,12 +61,6 @@ class WesternAstrologyCalculatorTest extends TestCase
         $this->assertCount(10, $data['planets']);
         $this->assertCount(12, $data['houses']);
         $this->assertNotEmpty($data['aspects']);
-
-        // Narrative Reference の誤位置へ回帰しない
-        $this->assertNotSame('Scorpio', $data['planets']['Moon']['sign']);
-        $this->assertNotSame('Aries', $data['planets']['Mercury']['sign']);
-        $this->assertNotSame('Aquarius', $data['planets']['Mars']['sign']);
-        $this->assertNotSame('Gemini', $data['planets']['Uranus']['sign']);
     }
 
     public function test_handles_missing_birth_time_as_partial(): void
