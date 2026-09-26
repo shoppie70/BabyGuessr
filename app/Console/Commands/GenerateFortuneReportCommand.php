@@ -11,10 +11,10 @@ use Illuminate\Console\Command;
 class GenerateFortuneReportCommand extends Command
 {
     protected $signature = 'fortune:generate-report
-                            {--id= : BabyProfile ID}
+                            {--id= : BabyProfile ID（省略時は全員）}
                             {--live : Call real Gemini API (default is blocked without this flag)}';
 
-    protected $description = 'Generate AI fortune report via Gemini Interactions API (1 call)';
+    protected $description = 'Generate AI fortune report via Gemini Interactions API (1 call per profile)';
 
     public function handle(FortuneManager $manager, GeminiFortuneService $gemini): int
     {
@@ -30,46 +30,52 @@ class GenerateFortuneReportCommand extends Command
             return self::FAILURE;
         }
 
-        $query = BabyProfile::query();
+        $query = BabyProfile::query()->orderBy('id');
         if ($id = $this->option('id')) {
             $query->where('id', $id);
         }
 
-        $profile = $query->first();
-        if (!$profile) {
+        $profiles = $query->get();
+        if ($profiles->isEmpty()) {
             $this->error('BabyProfile が見つかりません。');
 
             return self::FAILURE;
         }
 
-        $this->info('Calculating fortunes...');
-        $manager->calculateAll($profile);
+        $failed = 0;
 
-        $this->info('Calling Gemini Interactions API (store=false)...');
+        foreach ($profiles as $profile) {
+            $this->info("── id={$profile->id} ──");
+            $this->info('Calculating fortunes...');
+            $manager->calculateAll($profile);
 
-        try {
-            $report = $gemini->generate($profile);
-        } catch (GeminiFortuneException $e) {
-            $this->error("失敗: {$e->errorCode}");
-            if ($e->httpStatus > 0) {
-                $this->line("http: {$e->httpStatus}");
+            $this->info('Calling Gemini Interactions API (store=false)...');
+
+            try {
+                $report = $gemini->generate($profile);
+            } catch (GeminiFortuneException $e) {
+                $failed++;
+                $this->error("失敗: {$e->errorCode}");
+                if ($e->httpStatus > 0) {
+                    $this->line("http: {$e->httpStatus}");
+                }
+                $this->line($e->getMessage());
+
+                continue;
             }
-            $this->line($e->getMessage());
 
-            return self::FAILURE;
+            $data = $report->report_ciphertext ?? [];
+            $keys = array_keys($data['reports'] ?? []);
+
+            $this->info('成功');
+            $this->line('status: '.$report->status);
+            $this->line('model: '.$report->model);
+            $this->line('reports: '.implode(', ', $keys));
+            $this->line('has_integrated: '.(isset($data['integrated_report']) ? 'yes' : 'no'));
+            $this->line('has_parenting: '.(isset($data['parenting_guide']) ? 'yes' : 'no'));
+            $this->line('tokens: in='.($report->input_tokens ?? '—').' out='.($report->output_tokens ?? '—'));
         }
 
-        $data = $report->report_ciphertext ?? [];
-        $keys = array_keys($data['reports'] ?? []);
-
-        $this->info('成功');
-        $this->line('status: '.$report->status);
-        $this->line('model: '.$report->model);
-        $this->line('reports: '.implode(', ', $keys));
-        $this->line('has_integrated: '.(isset($data['integrated_report']) ? 'yes' : 'no'));
-        $this->line('has_parenting: '.(isset($data['parenting_guide']) ? 'yes' : 'no'));
-        $this->line('tokens: in='.($report->input_tokens ?? '—').' out='.($report->output_tokens ?? '—'));
-
-        return self::SUCCESS;
+        return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

@@ -15,8 +15,8 @@
     @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-amber-50/40 text-slate-800 min-h-screen antialiased selection:bg-rose-200">
-    <main class="max-w-2xl w-full mx-auto px-4 py-8">
+<body class="bg-amber-50/40 text-slate-800 min-h-screen antialiased selection:bg-rose-200 overflow-x-clip">
+    <main class="max-w-2xl w-full mx-auto px-4 py-8 overflow-x-clip">
         @yield('content')
     </main>
     @stack('scripts')

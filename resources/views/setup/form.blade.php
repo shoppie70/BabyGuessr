@@ -25,9 +25,9 @@
 
         @foreach ([
             'family_name' => ['苗字', '山田'],
-            'given_name' => ['下の名前', '花'],
+            'given_name' => ['下の名前', '陽葵'],
             'family_name_kana' => ['苗字のよみ（ひらがな）', 'やまだ'],
-            'given_name_kana' => ['下の名前のよみ（ひらがな）', 'はな'],
+            'given_name_kana' => ['下の名前のよみ（ひらがな）', 'ひまり'],
         ] as $name => [$label, $example])
             <div>
                 <label for="{{ $name }}" class="block text-sm font-bold mb-1">{{ $label }}</label>
@@ -39,7 +39,7 @@
                     maxlength="50"
                     value="{{ old($name, $formData[$name] ?? '') }}"
                     placeholder="例: {{ $example }}"
-                    class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                    class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-[16px] bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
                 >
             </div>
         @endforeach
@@ -58,18 +58,32 @@
 
         <div>
             <label for="birth_date" class="block text-sm font-bold mb-1">生まれた日</label>
-            <input type="date" id="birth_date" name="birth_date" required max="{{ date('Y-m-d') }}" value="{{ old('birth_date', $formData['birth_date'] ?? '') }}" class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
+            <input
+                type="date"
+                id="birth_date"
+                name="birth_date"
+                required
+                max="{{ date('Y-m-d') }}"
+                value="{{ old('birth_date', $formData['birth_date'] ?? '') }}"
+                class="w-full max-w-full min-h-12 box-border px-3 sm:px-4 py-3 rounded-xl border border-slate-200 text-[16px] leading-normal bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+            >
         </div>
 
         <div>
             <label for="birth_time" class="block text-sm font-bold mb-1">生まれた時刻</label>
-            <input type="time" id="birth_time" name="birth_time" value="{{ old('birth_time', $formData['birth_time'] ?? '') }}" class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
+            <input
+                type="time"
+                id="birth_time"
+                name="birth_time"
+                value="{{ old('birth_time', $formData['birth_time'] ?? '') }}"
+                class="w-full max-w-full min-h-12 box-border px-3 sm:px-4 py-3 rounded-xl border border-slate-200 text-[16px] leading-normal bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+            >
             <p class="text-xs text-slate-500 mt-1">わからないときは空欄のままで大丈夫です。</p>
         </div>
 
         <div>
             <label for="birth_place" class="block text-sm font-bold mb-1">生まれた場所</label>
-            <input type="text" id="birth_place" name="birth_place" maxlength="100" value="{{ old('birth_place', $formData['birth_place'] ?? '') }}" placeholder="例: 検証県検証市" class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
+            <input type="text" id="birth_place" name="birth_place" maxlength="100" value="{{ old('birth_place', $formData['birth_place'] ?? '') }}" placeholder="例: 東京都港区" class="w-full min-h-12 px-4 rounded-xl border border-slate-200 text-[16px] bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
             <p class="text-xs text-slate-500 mt-1">わかれば。鑑定に使います。</p>
         </div>
 

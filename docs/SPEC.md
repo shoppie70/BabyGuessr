@@ -3,7 +3,7 @@
 - Status: Draft v1
 - Date: 2026-09-25
 - Purpose: 友人の子どもの名前を仲間内で当てる、1ゲーム限定・限定公開Webアプリ
-- Test fixture: 山田 花
+- Test fixture: Subject A（詳細は tests/Fixtures/Fortune/）
 
 ---
 
@@ -21,7 +21,7 @@ GuessBabyName v2 は、友人に子どもが生まれた際、両親が正解の
 2. 運営者自身がDB・ログ・診断画面を確認しても正解名を偶然知りにくいこと
 3. 共有レンタルサーバー上で常駐プロセスなしに運用できること
 4. 鑑定の基礎計算とAIによる文章生成を分離すること
-5. 占術計算の正しさを山田花の Verified Golden Fixture（暦・天文照合済み）で回帰テストできること
+5. 占術計算の正しさをSubject A の Verified Golden Fixture（暦・天文照合済み）で回帰テストできること
 
 ---
 
@@ -61,7 +61,7 @@ GuessBabyName v2 は、友人に子どもが生まれた際、両親が正解の
 - 管理者による平文氏名閲覧UI
 - 両親自身の出生情報を使った親子相性鑑定
 
-親子相性鑑定は花の既存資料には存在するが、v1 では両親の出生情報を収集しないため対象外とする。
+親子相性鑑定は旧 Narrative 資料には存在するが、v1 では両親の出生情報を収集しないため対象外とする。
 
 ---
 
@@ -468,7 +468,7 @@ AIに暦・画数・天体位置などの基礎計算を推測させない。
 
 ## 11. 対象占術
 
-v1 では花の既存資料に合わせ、以下7系統を対象とする。
+v1 では旧 Narrative 資料に合わせ、以下7系統を対象とする。
 
 1. 四柱推命
 2. 九星気学
@@ -983,28 +983,20 @@ DB dumpを取得し、以下の文字列検索でヒットしないこと。
 
 ---
 
-## 23. 山田花 Golden Fixture
+## 23. Subject A Golden Fixture
 
 既存の鑑定資料を、Calculator実装の回帰テスト用fixtureとして使用する。
 
 ### 23.1 入力
 
-```text
-姓: 山田
-名: 花
-姓読み: やまだ
-名読み: はな
-Roman: HANA YAMADA
-性別: 女性
-生年月日: 2000-01-15
-出生時刻: 12:00 JST
-出生地: 検証県検証市中央区
-座標: 約 東経133.93 / 北緯34.65〜34.66
-```
+個人を特定できる姓名・住所は本ドキュメントに記載しない。正の入力値はリポジトリ内の Verified Fixture のみを参照する。
+
+- Fixture: `tests/Fixtures/Fortune/verified_fixture.php`（実装・テスト用の合成データ）
+- 検証メモ: `docs/phase-3-1-verification.md`
 
 ### 23.2 Verified Golden Fixture (Phase 3.1)
 
-正の期待値は `tests/Fixtures/Fortune/verified_fixture.php`。検証根拠は `tests/Fixtures/Fortune/PHASE_3_1_VERIFICATION.md`。
+正の期待値は上記 Fixture。検証根拠は `docs/phase-3-1-verification.md`。
 
 ```text
 四柱: 年丙午 / 月壬辰 / 日庚戌 / 時丙戌（日干 庚）
@@ -1052,7 +1044,7 @@ AI出力は文章の完全一致テストを行わない。
 - medical / deterministic future claimを含まない
 - disclaimerがある
 
-Golden Fixtureでは、既存の花レポートを品質比較の参考資料とするが、文章一致を合格条件にしない。
+Golden Fixtureでは、旧 Narrative レポートを品質比較の参考資料とするが、文章一致を合格条件にしない。
 
 ---
 
@@ -1073,7 +1065,7 @@ Golden Fixtureでは、既存の花レポートを品質比較の参考資料と
 
 完了条件:
 
-「山田花」を登録し、運営者がDBを見ても「花」を確認できない状態で、回答「花」だけが正解になる。
+Subject A を登録し、運営者がDBを見ても下の名前を確認できない状態で、正しい下の名前の回答だけが正解になる。
 
 ### Phase 2: Fortune Calculator
 
@@ -1089,7 +1081,7 @@ Golden Fixtureでは、既存の花レポートを品質比較の参考資料と
 6. 西洋占星術
 7. 紫微斗数
 
-各CalculatorはAya fixtureが通ってから次へ進む。
+各CalculatorはSubject A fixtureが通ってから次へ進む。
 
 ### Phase 3: AI Reports
 
@@ -1128,7 +1120,7 @@ Golden Fixtureでは、既存の花レポートを品質比較の参考資料と
 - 回答内容もDBに平文で存在しない
 - Operator診断画面からAI生成状態を確認できる
 - Operator診断画面に正解名が出ない
-- 7 Calculator がAya Golden Fixtureで検証済み
+- 7 Calculator がSubject A Golden Fixtureで検証済み
 - 7個別鑑定を生成できる
 - 総合鑑定を生成できる
 - 育成・開運ガイドを生成できる

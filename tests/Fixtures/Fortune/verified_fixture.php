@@ -1,12 +1,14 @@
 <?php
 
 /**
- * 山田花 — Phase 3.1 Verified Golden Fixture
+ * Subject A — Phase 3.1 Verified Golden Fixture (synthetic)
+ * NOTE: Names/place in this file are fixture labels for regression tests.
+ * Prefer fictional values if publishing the repository publicly.
  *
  * 旧鑑定Markdown（SPEC §23 expected v0）は Narrative Reference のみ。
  * 本fixtureは決定論的Calculator出力を、暦・天文の一次ソースと照合した採用値。
  *
- * 入力: 2000-01-15 12:00 Asia/Tokyo / 検証県検証市中央区 / 女性
+ * 入力: 2000-01-15 12:00 Asia/Tokyo / sample birth place / female
  * UTC:  2000-01-15 03:00
  *
  * @return array<string, mixed>

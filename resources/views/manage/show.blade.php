@@ -16,8 +16,8 @@
         <h1 class="text-xl font-bold">鑑定</h1>
         @if ($ready)
             <p class="text-sm text-slate-500">できています。下のリンクを友人に送ってください。</p>
-            <div class="flex gap-2">
-                <input type="text" readonly value="{{ $fortuneUrl }}" class="min-w-0 flex-1 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm">
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" readonly value="{{ $fortuneUrl }}" class="min-w-0 w-full flex-1 bg-amber-50 border border-amber-100 rounded-xl px-3 py-3 text-xs sm:text-sm break-all">
                 <button type="button" data-copy="{{ $fortuneUrl }}" class="shrink-0 min-h-12 px-4 rounded-xl bg-slate-800 text-white text-sm font-bold cursor-pointer">コピー</button>
             </div>
         @elseif ($status === 'failed')
@@ -34,8 +34,8 @@
     <section class="bg-white rounded-2xl border border-amber-100 shadow-sm p-6 space-y-3">
         <h2 class="text-xl font-bold">名前当てゲームのリンク</h2>
         <p class="text-sm text-slate-500">友人に送って、赤ちゃんの名前を当ててもらいましょう。</p>
-        <div class="flex gap-2">
-            <input type="text" readonly value="{{ $gameUrl }}" class="min-w-0 flex-1 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm">
+        <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" readonly value="{{ $gameUrl }}" class="min-w-0 w-full flex-1 bg-amber-50 border border-amber-100 rounded-xl px-3 py-3 text-xs sm:text-sm break-all">
             <button type="button" data-copy="{{ $gameUrl }}" class="shrink-0 min-h-12 px-4 rounded-xl bg-slate-800 text-white text-sm font-bold cursor-pointer">コピー</button>
         </div>
     </section>

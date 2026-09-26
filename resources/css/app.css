@@ -9,3 +9,36 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* iOS Safari: date/time の見た目崩れ・ズーム防止 */
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    input[type='date'],
+    input[type='time'] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 3rem;
+        font-size: 16px;
+        line-height: 1.25;
+    }
+
+    input[type='date']::-webkit-date-and-time-value,
+    input[type='time']::-webkit-date-and-time-value {
+        text-align: left;
+        min-height: 1.5em;
+    }
+
+    input[type='date']::-webkit-calendar-picker-indicator,
+    input[type='time']::-webkit-calendar-picker-indicator {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-inline-start: 0.25rem;
+        opacity: 0.65;
+        cursor: pointer;
+    }
+}
