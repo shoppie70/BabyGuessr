@@ -130,7 +130,7 @@
                         };
                     @endphp
                     <li class="flex items-center justify-between gap-3 rounded-xl border px-3 py-2 {{ $resultClass }}">
-                        <span class="font-bold text-sm text-slate-800">{{ $guess->guess }}</span>
+                        <span class="font-bold text-sm text-slate-800 {{ !empty($guess->is_mosaic) ? 'tracking-widest select-none' : '' }}" @if (!empty($guess->is_mosaic)) title="正解のため非表示" @endif>{{ $guess->guess_display ?? $guess->guess }}</span>
                         <span class="text-xs font-bold shrink-0">{{ $resultLabel }}</span>
                     </li>
                 @endforeach
@@ -170,13 +170,32 @@ document.addEventListener('DOMContentLoaded', () => {
         wrong: { label: 'はずれ', row: 'bg-slate-50 text-slate-600 border-slate-200' },
     };
 
+    let canSeeSpoilers = @json($canSeeSpoilers);
+
+    function mosaicGuess(name) {
+        const len = Math.max(2, Array.from(name || '').length);
+        return '●'.repeat(len);
+    }
+
+    function displayGuess(name, result) {
+        if (result === 'correct' && !canSeeSpoilers) {
+            return mosaicGuess(name);
+        }
+        return name;
+    }
+
     function appendHistory(name, result) {
         if (!historyList || !historyCard) return;
         const meta = resultMeta[result] || resultMeta.wrong;
+        const shown = displayGuess(name, result);
         const li = document.createElement('li');
         li.className = `flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${meta.row}`;
         li.innerHTML = `<span class="font-bold text-sm text-slate-800"></span><span class="text-xs font-bold shrink-0"></span>`;
-        li.children[0].textContent = name;
+        li.children[0].textContent = shown;
+        if (result === 'correct' && shown !== name) {
+            li.children[0].classList.add('tracking-widest', 'select-none');
+            li.children[0].title = '正解のため非表示';
+        }
         li.children[1].textContent = meta.label;
         historyList.appendChild(li);
         historyCard.classList.remove('hidden');
@@ -221,6 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // 試行回数の更新
             if (data.attempt_no) {
                 attemptCount.textContent = data.attempt_no;
+            }
+
+            if (data.is_correct) {
+                canSeeSpoilers = true;
             }
 
             appendHistory(data.guess || babyName, data.result);

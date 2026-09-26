@@ -44,6 +44,21 @@ class GameController extends Controller
             ->where('result', Guess::RESULT_CORRECT)
             ->exists();
 
+        // ネタバレ防止: 未正解の閲覧者には「正解」回答の文言を伏せる
+        $canSeeSpoilers = $hasWon || $profile->isRevealed();
+        $guessHistory = $guessHistory->map(function (Guess $guess) use ($canSeeSpoilers) {
+            $text = (string) $guess->guess;
+            if ($guess->result === Guess::RESULT_CORRECT && ! $canSeeSpoilers) {
+                $guess->setAttribute('guess_display', $this->mosaicGuess($text));
+                $guess->setAttribute('is_mosaic', true);
+            } else {
+                $guess->setAttribute('guess_display', $text);
+                $guess->setAttribute('is_mosaic', false);
+            }
+
+            return $guess;
+        });
+
         // 正解前ヒント情報 (性別、生年月日のみ)
         $sexLabel = match ($profile->sex) {
             'female' => '女の子 👧',
@@ -57,6 +72,7 @@ class GameController extends Controller
             'attemptCount' => $attemptCount,
             'guessHistory' => $guessHistory,
             'hasWon' => $hasWon,
+            'canSeeSpoilers' => $canSeeSpoilers,
             // 正解前ヒント情報
             'sexLabel' => $sexLabel,
             'birthDateLabel' => $profile->birth_date ? $profile->birth_date->format('Y年n月j日') : null,
@@ -64,6 +80,16 @@ class GameController extends Controller
             'revealedFullName' => ($hasWon || $profile->isRevealed()) ? $profile->full_name : null,
             'revealedFullNameKana' => ($hasWon || $profile->isRevealed()) ? $profile->full_name_kana : null,
         ]);
+    }
+
+    /**
+     * みんなの回答用の伏せ字（文字数だけ伝える）
+     */
+    protected function mosaicGuess(string $guess): string
+    {
+        $len = max(2, mb_strlen($guess));
+
+        return str_repeat('●', $len);
     }
 
     /**
