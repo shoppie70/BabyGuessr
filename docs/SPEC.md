@@ -1003,7 +1003,7 @@ DB dumpを取得し、以下の文字列検索でヒットしないこと。
 九星: 本命一白 / 月命六白 / 日命八白 / 時命五黄 / 傾宮離 / 同会六白
 算命: 日干庚 / 寅卯天中殺 / 陽占は庚基点
 宿曜: 旧暦丙午年2月19日 / 心宿 / 急速宿 / 月曜
-数秘: HANA YAMADA / LP 11/2 / Destiny·Soul·Personality 9 / Birthday 6 / Maturity 2/20
+数秘: HANA YAMADA / LP 11/2 / Destiny 6 / Soul 5 / Personality 1 / Birthday 6 / Maturity 8
 紫微: 旧暦2/19戌時 / 命宮巳 / 命主破軍 / 身主天同 / 命宮七殺
 西洋: JPL Horizons照合済み（例: Sun Ari 16.64° / Moon Sag 5.49° / ASC Sco 0°）
 ```
