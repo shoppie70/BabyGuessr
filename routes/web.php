@@ -2,31 +2,29 @@
 
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\HubController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\SetupController;
-use App\Models\BabyProfile;
 use Illuminate\Support\Facades\Route;
 
-// ルートURL (/) は非公開。local のときだけ開発用リンクを出す。
+// ルートURL (/) は非公開。local のときだけハブへの近道を出す。
 Route::get('/', function () {
     $links = [];
     if (app()->environment('local')) {
-        $profile = BabyProfile::query()->first();
+        $hub = config('game.hub_token');
         $setup = config('game.setup_token');
-        $manage = $profile?->manage_token ?: config('game.manage_token');
-        $diagnostics = $profile?->diagnostics_token ?: config('game.diagnostics_token');
         $links = array_filter([
+            'ハブ' => $hub ? url('/hub/'.$hub) : null,
             '登録' => $setup ? url('/setup/'.$setup) : null,
-            '名前当て' => $profile ? url('/g/'.$profile->game_token) : null,
-            '鑑定' => $manage ? url('/manage/'.$manage) : null,
-            '診断' => $diagnostics ? url('/diagnostics/'.$diagnostics) : null,
         ]);
     }
 
     return response()->view('landing-private', ['links' => $links], 404);
 });
 
-// 初期セットアップフロー (1デプロイにつき1回限りの登録)
+Route::get('/hub/{token}', [HubController::class, 'show'])->name('hub');
+
+// 初期セットアップフロー (SETUP_TOKEN 保持者が複数登録可)
 Route::prefix('setup/{token}')->name('setup.')->group(function () {
     Route::get('/', [SetupController::class, 'show'])->name('show');
     Route::post('/confirm', [SetupController::class, 'confirm'])->name('confirm');

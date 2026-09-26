@@ -33,4 +33,15 @@ return [
     */
     'manage_token' => env('MANAGE_TOKEN', 'demo-manage-token-2026'),
     'diagnostics_token' => env('DIAGNOSTICS_TOKEN', 'demo-diag-token-2026'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Hub Token
+    |--------------------------------------------------------------------------
+    |
+    | Secret path token for the private hub that lists baby shortcuts.
+    | Keep this as private as manage tokens; it reveals their URLs.
+    |
+    */
+    'hub_token' => env('HUB_TOKEN', 'demo-hub-token-2026'),
 ];

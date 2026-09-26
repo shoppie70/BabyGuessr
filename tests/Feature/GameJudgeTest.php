@@ -92,6 +92,7 @@ class GameJudgeTest extends TestCase
         $response1->assertOk()
             ->assertJson([
                 'result' => 'wrong',
+                'guess' => '楓',
                 'is_correct' => false,
                 'is_reading_match' => false,
                 'attempt_no' => 1,
@@ -144,5 +145,22 @@ class GameJudgeTest extends TestCase
 
         // DBに4件の回答が記録されていること
         $this->assertEquals(4, Guess::where('baby_profile_id', $profile->id)->count());
+
+        // 画面にみんなの回答が出ること
+        $this->get(route('game.show', ['token' => $profile->game_token]))
+            ->assertOk()
+            ->assertSee('みんなの回答')
+            ->assertSee('楓')
+            ->assertSee('はな')
+            ->assertSee('ハナ')
+            ->assertSee('花');
+
+        // 別セッションからも同じ一覧が見えること
+        $this->flushSession();
+        $this->get(route('game.show', ['token' => $profile->game_token]))
+            ->assertOk()
+            ->assertSee('みんなの回答')
+            ->assertSee('楓')
+            ->assertSee('花');
     }
 }

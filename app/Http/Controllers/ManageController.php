@@ -15,17 +15,21 @@ class ManageController extends Controller
      */
     public function show(string $token): View
     {
-        $profile = BabyProfile::first();
-
-        $validToken = $profile?->manage_token ?? config('game.manage_token');
-        if (empty($validToken) || !hash_equals($validToken, $token)) {
-            abort(404);
-        }
+        $profile = BabyProfile::where('manage_token', $token)->first();
 
         if (!$profile) {
-            return view('manage.unregistered', [
-                'token' => $token,
-            ]);
+            $bootstrap = config('game.manage_token');
+            if (
+                !empty($bootstrap)
+                && hash_equals($bootstrap, $token)
+                && !BabyProfile::exists()
+            ) {
+                return view('manage.unregistered', [
+                    'token' => $token,
+                ]);
+            }
+
+            abort(404);
         }
 
         return view('manage.show', [
@@ -43,11 +47,7 @@ class ManageController extends Controller
      */
     public function updateStatus(Request $request, string $token): RedirectResponse
     {
-        $profile = BabyProfile::firstOrFail();
-
-        if (!hash_equals($profile->manage_token, $token)) {
-            abort(404);
-        }
+        $profile = BabyProfile::where('manage_token', $token)->firstOrFail();
 
         $validated = $request->validate([
             'status' => ['required', 'in:open,revealed,closed'],
@@ -66,11 +66,7 @@ class ManageController extends Controller
      */
     public function generateFortune(string $token, GeminiFortuneService $gemini): RedirectResponse
     {
-        $profile = BabyProfile::firstOrFail();
-
-        if (!hash_equals($profile->manage_token, $token)) {
-            abort(404);
-        }
+        $profile = BabyProfile::where('manage_token', $token)->firstOrFail();
 
         $gemini->queueBatch($profile);
 
@@ -83,11 +79,7 @@ class ManageController extends Controller
      */
     public function fortune(string $token): View|RedirectResponse
     {
-        $profile = BabyProfile::firstOrFail();
-
-        if (!hash_equals($profile->manage_token, $token)) {
-            abort(404);
-        }
+        $profile = BabyProfile::where('manage_token', $token)->firstOrFail();
 
         $report = $profile->fortuneReport;
 

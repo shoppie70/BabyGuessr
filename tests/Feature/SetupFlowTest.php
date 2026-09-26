@@ -137,11 +137,11 @@ class SetupFlowTest extends TestCase
     }
 
     /**
-     * 二重登録の防止: 登録済み状態では新しいBabyProfileを登録できないこと
+     * 複数登録: 登録済みでも別の赤ちゃんを追加できること
      */
-    public function test_cannot_register_twice(): void
+    public function test_can_register_multiple_babies(): void
     {
-        $testData = [
+        $first = [
             'family_name' => '山田',
             'given_name' => '花',
             'family_name_kana' => 'やまだ',
@@ -150,31 +150,30 @@ class SetupFlowTest extends TestCase
             'birth_date' => '2000-01-15',
         ];
 
-        // 初回登録
-        $this->post('/setup/' . $this->setupToken, $testData)->assertRedirect();
+        $this->post('/setup/' . $this->setupToken, $first)->assertRedirect();
         $this->assertEquals(1, BabyProfile::count());
+        $firstProfile = BabyProfile::first();
 
-        // 2回目の登録試行 (フォーム表示時)
         $formResponse = $this->get('/setup/' . $this->setupToken);
         $formResponse->assertOk()
-            ->assertViewIs('setup.already-registered')
-            ->assertSee('受け付け済みです');
+            ->assertViewIs('setup.form')
+            ->assertSee('赤ちゃんのことを教えてください');
 
-        // 2回目の登録試行 (POST時)
-        $secondStoreResponse = $this->post('/setup/' . $this->setupToken, [
+        $second = [
             'family_name' => '山田',
             'given_name' => '太郎',
             'family_name_kana' => 'やまだ',
             'given_name_kana' => 'たろう',
             'sex' => 'male',
             'birth_date' => '2026-01-01',
-        ]);
-        $secondStoreResponse->assertRedirect(route('setup.show', ['token' => $this->setupToken]));
+        ];
+        $this->post('/setup/' . $this->setupToken, $second)->assertRedirect();
 
-        // レコード数は1件のままであること
-        $this->assertEquals(1, BabyProfile::count());
-        $profile = BabyProfile::first();
-        $this->assertEquals('山田 花', $profile->full_name);
+        $this->assertEquals(2, BabyProfile::count());
+        $secondProfile = BabyProfile::orderByDesc('id')->first();
+        $this->assertEquals('山田 太郎', $secondProfile->full_name);
+        $this->assertNotEquals($firstProfile->manage_token, $secondProfile->manage_token);
+        $this->assertNotEquals($firstProfile->game_token, $secondProfile->game_token);
     }
 
     /**
@@ -275,11 +274,13 @@ class SetupFlowTest extends TestCase
         $this->post('/setup/' . $this->setupToken, $testData);
         $profile = BabyProfile::first();
 
-        // 正解前
+        // 正解前（下の名前・苗字・出生詳細は出さない）
         $response = $this->get('/g/' . $profile->game_token);
         $response->assertOk()
-            ->assertSee('山田')
             ->assertSee('女の子')
+            ->assertSee('2000年1月15日')
+            ->assertDontSee('山田')
+            ->assertDontSee('花')
             ->assertDontSee('検証県検証市中央区')
             ->assertDontSee('12:00')
             ->assertDontSee('2,612g');

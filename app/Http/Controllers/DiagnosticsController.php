@@ -13,12 +13,17 @@ class DiagnosticsController extends Controller
      */
     public function show(string $token): View
     {
-        $profile = BabyProfile::first();
+        $profile = BabyProfile::where('diagnostics_token', $token)->first();
 
-        // トークン検証: プロフィールのトークン、または未登録時は環境設定のトークンと照合
-        $validToken = $profile?->diagnostics_token ?? config('game.diagnostics_token');
-        if (empty($validToken) || !hash_equals($validToken, $token)) {
-            abort(404);
+        if (!$profile) {
+            $bootstrap = config('game.diagnostics_token');
+            if (
+                empty($bootstrap)
+                || !hash_equals($bootstrap, $token)
+                || BabyProfile::exists()
+            ) {
+                abort(404);
+            }
         }
 
         if ($profile) {

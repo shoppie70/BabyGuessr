@@ -34,13 +34,6 @@ class SetupController extends Controller
     {
         $this->validateSetupToken($token);
 
-        // 既に登録済みの場合は登録済み案内を表示
-        if (BabyProfile::exists()) {
-            return view('setup.already-registered', [
-                'token' => $token,
-            ]);
-        }
-
         $formData = session()->get('setup_form_data', []);
 
         return view('setup.form', [
@@ -56,10 +49,6 @@ class SetupController extends Controller
     {
         $this->validateSetupToken($token);
 
-        if (BabyProfile::exists()) {
-            return redirect()->route('setup.show', ['token' => $token]);
-        }
-
         $validated = $request->validate([
             'family_name' => ['required', 'string', 'max:50'],
             'given_name' => ['required', 'string', 'max:50'],
@@ -72,7 +61,6 @@ class SetupController extends Controller
             'birth_weight' => ['nullable', 'integer', 'min:500', 'max:10000'],
         ]);
 
-        // 確認用セッションに保存
         session()->put('setup_form_data', $validated);
 
         return view('setup.confirm', [
@@ -88,12 +76,6 @@ class SetupController extends Controller
     {
         $this->validateSetupToken($token);
 
-        // 二重登録の完全防止
-        if (BabyProfile::exists()) {
-            return redirect()->route('setup.show', ['token' => $token])
-                ->with('error', 'すでに赤ちゃん情報は登録されています。');
-        }
-
         $validated = $request->validate([
             'family_name' => ['required', 'string', 'max:50'],
             'given_name' => ['required', 'string', 'max:50'],
@@ -106,20 +88,17 @@ class SetupController extends Controller
             'birth_weight' => ['nullable', 'integer', 'min:500', 'max:10000'],
         ]);
 
-        // 名前・読みの正規化
         $normalizedGivenName = $this->normalizer->normalizeKanji($validated['given_name']);
         $normalizedGivenNameKana = $this->normalizer->normalizeKana($validated['given_name_kana']);
 
-        // 判定用HMACの生成
         $givenNameHmac = $this->hmacService->generateHmac($normalizedGivenName);
         $givenNameKanaHmac = $this->hmacService->generateHmac($normalizedGivenNameKana);
 
-        // 各種トークンの設定 (環境変数指定またはランダム生成)
+        // 複数登録時に衝突しないよう、毎回ランダム発行する
         $gameToken = 'game-' . bin2hex(random_bytes(12));
-        $manageToken = config('game.manage_token') ?: ('manage-' . bin2hex(random_bytes(12)));
-        $diagnosticsToken = config('game.diagnostics_token') ?: ('diag-' . bin2hex(random_bytes(12)));
+        $manageToken = 'manage-' . bin2hex(random_bytes(12));
+        $diagnosticsToken = 'diag-' . bin2hex(random_bytes(12));
 
-        // 暗号化保存 (モデルのcastsにより自動暗号化)
         $profile = BabyProfile::create([
             'family_name_encrypted' => $validated['family_name'],
             'given_name_encrypted' => $validated['given_name'],
@@ -138,7 +117,6 @@ class SetupController extends Controller
             'diagnostics_token' => $diagnosticsToken,
         ]);
 
-        // 占術基礎計算の実行 (バックグラウンド/同期で暗号化保存)
         try {
             app(\App\Services\Fortune\FortuneManager::class)->calculateAll($profile);
             app(\App\Services\Fortune\GeminiFortuneService::class)->queueBatch($profile);
@@ -146,10 +124,7 @@ class SetupController extends Controller
             \Illuminate\Support\Facades\Log::error('Fortune calculation failed on setup: ' . $e->getMessage());
         }
 
-        // 一時セッションデータのクリア
         session()->forget('setup_form_data');
-
-        // 登録完了画面表示用セッション
         session()->flash('setup_completed', true);
         session()->flash('registered_game_token', $profile->game_token);
         session()->flash('registered_manage_token', $profile->manage_token);
@@ -164,18 +139,17 @@ class SetupController extends Controller
     {
         $this->validateSetupToken($token);
 
-        $profile = BabyProfile::first();
-        if (!$profile) {
+        if (!session('setup_completed')) {
             return redirect()->route('setup.show', ['token' => $token]);
         }
 
-        $gameUrl = url('/g/' . $profile->game_token);
-        $manageUrl = url('/manage/' . $profile->manage_token);
+        $gameToken = session('registered_game_token');
+        $manageToken = session('registered_manage_token');
 
         return view('setup.complete', [
             'token' => $token,
-            'gameUrl' => $gameUrl,
-            'manageUrl' => $manageUrl,
+            'gameUrl' => $gameToken ? url('/g/' . $gameToken) : null,
+            'manageUrl' => $manageToken ? url('/manage/' . $manageToken) : null,
         ]);
     }
 }

@@ -34,10 +34,8 @@ class UrlProtectionTest extends TestCase
         $this->get('/')
             ->assertNotFound()
             ->assertSee('登録')
-            ->assertSee('名前当て')
-            ->assertSee('鑑定')
-            ->assertSee('診断')
-            ->assertSee('/g/');
+            ->assertSee('ハブ')
+            ->assertSee('/hub/');
     }
 
     /**

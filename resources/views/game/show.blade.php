@@ -111,6 +111,31 @@
                 <span class="text-slate-400">何回でも回答できます</span>
             </div>
         </div>
+
+        <!-- Guess History -->
+        <div id="guess-history-card" class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 space-y-3 {{ $guessHistory->isEmpty() ? 'hidden' : '' }}">
+            <h2 class="text-sm font-bold text-slate-700">みんなの回答</h2>
+            <ul id="guess-history-list" class="space-y-2">
+                @foreach ($guessHistory as $guess)
+                    @php
+                        $resultLabel = match ($guess->result) {
+                            'correct' => '正解',
+                            'reading_match' => '読み一致',
+                            default => 'はずれ',
+                        };
+                        $resultClass = match ($guess->result) {
+                            'correct' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            'reading_match' => 'bg-amber-50 text-amber-700 border-amber-200',
+                            default => 'bg-slate-50 text-slate-600 border-slate-200',
+                        };
+                    @endphp
+                    <li class="flex items-center justify-between gap-3 rounded-xl border px-3 py-2 {{ $resultClass }}">
+                        <span class="font-bold text-sm text-slate-800">{{ $guess->guess }}</span>
+                        <span class="text-xs font-bold shrink-0">{{ $resultLabel }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 </div>
 @endsection
@@ -135,6 +160,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const revealedContainer = document.getElementById('revealed-container');
     const revealedName = document.getElementById('revealed-name');
     const revealedKana = document.getElementById('revealed-kana');
+
+    const historyCard = document.getElementById('guess-history-card');
+    const historyList = document.getElementById('guess-history-list');
+
+    const resultMeta = {
+        correct: { label: '正解', row: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        reading_match: { label: '読み一致', row: 'bg-amber-50 text-amber-700 border-amber-200' },
+        wrong: { label: 'はずれ', row: 'bg-slate-50 text-slate-600 border-slate-200' },
+    };
+
+    function appendHistory(name, result) {
+        if (!historyList || !historyCard) return;
+        const meta = resultMeta[result] || resultMeta.wrong;
+        const li = document.createElement('li');
+        li.className = `flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${meta.row}`;
+        li.innerHTML = `<span class="font-bold text-sm text-slate-800"></span><span class="text-xs font-bold shrink-0"></span>`;
+        li.children[0].textContent = name;
+        li.children[1].textContent = meta.label;
+        historyList.appendChild(li);
+        historyCard.classList.remove('hidden');
+    }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -176,6 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.attempt_no) {
                 attemptCount.textContent = data.attempt_no;
             }
+
+            appendHistory(data.guess || babyName, data.result);
 
             // 判定結果に応じた表示
             if (data.is_correct) {

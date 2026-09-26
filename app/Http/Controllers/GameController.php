@@ -34,6 +34,10 @@ class GameController extends Controller
             ->where('session_identifier', $sessionIdentifier)
             ->count();
 
+        $guessHistory = Guess::where('baby_profile_id', $profile->id)
+            ->orderBy('id')
+            ->get(['guess_encrypted', 'result', 'attempt_no']);
+
         // 正解済みか確認
         $hasWon = Guess::where('baby_profile_id', $profile->id)
             ->where('session_identifier', $sessionIdentifier)
@@ -51,6 +55,7 @@ class GameController extends Controller
             'profile' => $profile,
             'token' => $token,
             'attemptCount' => $attemptCount,
+            'guessHistory' => $guessHistory,
             'hasWon' => $hasWon,
             // 正解前ヒント情報
             'sexLabel' => $sexLabel,
@@ -111,6 +116,7 @@ class GameController extends Controller
             'result' => $judgeResult->result,
             'message' => $judgeResult->message,
             'attempt_no' => $attemptNo,
+            'guess' => $validated['baby_name'],
             'is_correct' => $judgeResult->isCorrect(),
             'is_reading_match' => $judgeResult->isReadingMatch(),
         ];
