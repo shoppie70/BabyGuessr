@@ -117,21 +117,9 @@
             <h2 class="text-sm font-bold text-slate-700">みんなの回答</h2>
             <ul id="guess-history-list" class="space-y-2">
                 @foreach ($guessHistory as $guess)
-                    @php
-                        $resultLabel = match ($guess->result) {
-                            'correct' => '正解',
-                            'reading_match' => '読み一致',
-                            default => 'はずれ',
-                        };
-                        $resultClass = match ($guess->result) {
-                            'correct' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                            'reading_match' => 'bg-amber-50 text-amber-700 border-amber-200',
-                            default => 'bg-slate-50 text-slate-600 border-slate-200',
-                        };
-                    @endphp
-                    <li class="flex items-center justify-between gap-3 rounded-xl border px-3 py-2 {{ $resultClass }}">
-                        <span class="font-bold text-sm text-slate-800 {{ !empty($guess->is_mosaic) ? 'tracking-widest select-none' : '' }}" @if (!empty($guess->is_mosaic)) title="正解のため非表示" @endif>{{ $guess->guess_display ?? $guess->guess }}</span>
-                        <span class="text-xs font-bold shrink-0">{{ $resultLabel }}</span>
+                    <li class="flex items-center justify-between gap-3 rounded-xl border px-3 py-2 bg-slate-50 text-slate-600 border-slate-200">
+                        <span class="font-bold text-sm text-slate-800">{{ $guess->guess }}</span>
+                        <span class="text-xs font-bold shrink-0">はずれ</span>
                     </li>
                 @endforeach
             </ul>
@@ -165,37 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList = document.getElementById('guess-history-list');
 
     const resultMeta = {
-        correct: { label: '正解', row: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-        reading_match: { label: '読み一致', row: 'bg-amber-50 text-amber-700 border-amber-200' },
         wrong: { label: 'はずれ', row: 'bg-slate-50 text-slate-600 border-slate-200' },
     };
 
-    let canSeeSpoilers = @json($canSeeSpoilers);
-
-    function mosaicGuess(name) {
-        const len = Math.max(2, Array.from(name || '').length);
-        return '●'.repeat(len);
-    }
-
-    function displayGuess(name, result) {
-        if (result === 'correct' && !canSeeSpoilers) {
-            return mosaicGuess(name);
-        }
-        return name;
-    }
-
     function appendHistory(name, result) {
-        if (!historyList || !historyCard) return;
-        const meta = resultMeta[result] || resultMeta.wrong;
-        const shown = displayGuess(name, result);
+        // ネタバレ防止: はずれ以外は一覧に出さない
+        if (result !== 'wrong' || !historyList || !historyCard) return;
+        const meta = resultMeta.wrong;
         const li = document.createElement('li');
         li.className = `flex items-center justify-between gap-3 rounded-xl border px-3 py-2 ${meta.row}`;
         li.innerHTML = `<span class="font-bold text-sm text-slate-800"></span><span class="text-xs font-bold shrink-0"></span>`;
-        li.children[0].textContent = shown;
-        if (result === 'correct' && shown !== name) {
-            li.children[0].classList.add('tracking-widest', 'select-none');
-            li.children[0].title = '正解のため非表示';
-        }
+        li.children[0].textContent = name;
         li.children[1].textContent = meta.label;
         historyList.appendChild(li);
         historyCard.classList.remove('hidden');
@@ -240,10 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // 試行回数の更新
             if (data.attempt_no) {
                 attemptCount.textContent = data.attempt_no;
-            }
-
-            if (data.is_correct) {
-                canSeeSpoilers = true;
             }
 
             appendHistory(data.guess || babyName, data.result);

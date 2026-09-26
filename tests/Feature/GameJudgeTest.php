@@ -146,24 +146,25 @@ class GameJudgeTest extends TestCase
         // DBに4件の回答が記録されていること
         $this->assertEquals(4, Guess::where('baby_profile_id', $profile->id)->count());
 
-        // 画面にみんなの回答が出ること（正解文言は伏せ字）
+        // みんなの回答にははずれだけ出る（読み一致・正解は出さない）
+        // ※このセッションは正解済みなのでバナーに氏名・読みは出る
         $this->get(route('game.show', ['token' => $profile->game_token]))
             ->assertOk()
             ->assertSee('みんなの回答')
             ->assertSee('楓')
-            ->assertSee('はな')
-            ->assertSee('ハナ')
-            ->assertSee('花')
-            ->assertSee('正解');
+            ->assertSee('はずれ')
+            ->assertDontSee('読み一致');
 
-        // 別セッション（未正解）からは正解テキストが見えないこと
+        // 別セッション（未正解）では正解・読み一致のテキストも一覧に出ない
         $this->flushSession();
         $this->get(route('game.show', ['token' => $profile->game_token]))
             ->assertOk()
             ->assertSee('みんなの回答')
             ->assertSee('楓')
+            ->assertSee('はずれ')
+            ->assertDontSee('はな')
+            ->assertDontSee('ハナ')
             ->assertDontSee('花')
-            ->assertSee('●●')
-            ->assertSee('正解');
+            ->assertDontSee('読み一致');
     }
 }
