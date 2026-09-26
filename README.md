@@ -15,7 +15,7 @@
 - **ハブ** — `/hub/{HUB_TOKEN}` から苗字・性別・生年月日ラベル付きでショートカット
 - **占術エンジン（Pure PHP）** — 数秘術・宿曜・九星・四柱・算命・西洋占星術・紫微斗数
 - **AI 鑑定** — Gemini Batch / Interactions API。個人識別情報は送信しない
-- **本番向け** — フロントはビルド済みを配備。ビルド済みアセットを配備
+- **本番向け** — フロントはビルド済みアセットを配備
 
 > [!IMPORTANT]
 > `/` は意図的に非公開（404）です。本番ではトークン付き URL かハブだけを共有してください。鑑定画面の URL は manage トークンを含むため、扱う相手に注意してください。
@@ -132,66 +132,7 @@ npm run build
 ./vendor/bin/sail artisan fortune:sync-batch
 ```
 
-本番 cron（例・5 分ごと）:
-
-```bash
-*/5 * * * * cd /path/to/app && php artisan schedule:run > /dev/null 2>&1
-```
-
-`routes/console.php` では `fortune:sync-batch` が 5 分ごとに登録されています。
-
----
-
-## Operations note (removed)
-
-
-
-```text
-
-  app/  public/  vendor/  .env  artisan …
-  .htaccess
-```
-
-### 手順
-
-1. 本番用 env を用意
-
-```bash
-
-```
-
-2. アセットをビルドしてアップロード
-
-```bash
-npm run build
-
-# または
-
-```
-
-`.env.production.local` に少なくとも次が必要です。
-
-```env
-(removed)
-
-
-
-```
-
-3. サーバーで初回のみ
-
-```bash
-php artisan migrate --force
-php artisan storage:link
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
-
-4. cron に `schedule:run` を追加（上記）
-
-> [!TIP]
-> 
+`routes/console.php` では `fortune:sync-batch` が 5 分ごとに登録されています。スケジューラを動かす環境では `php artisan schedule:run` を定期実行してください。
 
 ---
 
@@ -212,9 +153,7 @@ app/
   Console/Commands/     fortune:* 系
   Http/Controllers/     setup / game / manage / hub / diagnostics
   Services/             GameJudge*, NameHmac*, Fortune/*
-
 docs/                   SPEC・検証メモ
-scripts/                （非公開）
 resources/views/        Blade（スマホファースト）
 tests/                  Feature / Unit / Fixtures/Fortune
 ```
